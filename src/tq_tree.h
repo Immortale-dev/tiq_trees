@@ -2,7 +2,6 @@
 #define TQ_TREE_H_
 
 #include <functional>
-#include <memory>
 #include <type_traits>
 
 namespace Tiq {
@@ -11,26 +10,26 @@ namespace Tiq {
 		public:
 			class Node;
 			using node_ptr_t = Node*;
-			using const_node_ptr_t = std::add_const<node_ptr_t>::type;
+			using const_node_ptr_t = typename std::add_const<node_ptr_t>::type;
 			using comparator_fn_t = std::function<int(T&)>;
 
 			class Node{
 				friend Tree;
 
 				public:
-					const_node_ptr_t get_left() const;
-					const_node_ptr_t get_right() const;
-					const_node_ptr_t get_parent() const;
-					T& get_data() const;
-					bool is_end() const;
+					const_node_ptr_t left() const { return left_; };
+					const_node_ptr_t right() const { return right_; };
+					const_node_ptr_t parent() const { return parent_; };
+					T& data() { return data_; };
+					bool is_end() const { return is_end_;  };
 
 				private:
-					T data;
-					node_ptr_t parent_;
-					node_ptr_t left_;
-					node_ptr_t right_;
-					bool color_;
-					bool is_end_;
+					node_ptr_t parent_ = nullptr;
+					node_ptr_t left_ = nullptr;
+					node_ptr_t right_ = nullptr;
+					bool color_ = 0;
+					bool is_end_ = 1;
+					T data_ = {};
 			};
 
 			Tree();
@@ -46,11 +45,8 @@ namespace Tiq {
 			const_node_ptr_t find_max(const_node_ptr_t node) const;
 			const_node_ptr_t find_next(const_node_ptr_t node) const;
 			const_node_ptr_t find_prev(const_node_ptr_t node) const;
-			const_node_ptr_t insert(const_node_ptr_t node, T data) const;
-			const_node_ptr_t insert(const_node_ptr_t node, T&& data) const;
-			const_node_ptr_t erase(const_node_ptr_t node) const;
-			const_node_ptr_t begin() const;
-			const_node_ptr_t end() const;
+			const_node_ptr_t insert(const_node_ptr_t node, T&& data);
+			const_node_ptr_t erase(const_node_ptr_t node);
 			void clear();
 			size_t size() const;
 
@@ -59,15 +55,16 @@ namespace Tiq {
 			void right_rotate(node_ptr_t x);
 			void fix_delete(node_ptr_t x);
 			void fix_insert(node_ptr_t x);
-			void rb_transplant(node_ptr_t u, note_ptr_t v);
+			void rb_transplant(node_ptr_t u, node_ptr_t v);
 
 			node_ptr_t create_empty_node();
+			void delete_node(node_ptr_t node);
 			void dfs(node_ptr_t node, std::function<void(node_ptr_t)> fn);
 
 			size_t count_;
 			node_ptr_t root_;
-			node_ptr_t first_;
-			node_ptr_t last_;
+			node_ptr_t begin_;
+			node_ptr_t end_;
 	};
 }
 
