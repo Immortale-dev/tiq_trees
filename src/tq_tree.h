@@ -5,7 +5,7 @@
 #include <type_traits>
 
 namespace Tiq {
-	template<class T>
+	template<class T, template<typename> class A = std::allocator>
 	class Tree {
 		public:
 			class Node;
@@ -33,7 +33,7 @@ namespace Tiq {
 			};
 
 			Tree();
-			~Tree();
+			virtual ~Tree();
 
 			const_node_ptr_t root() const;
 			const_node_ptr_t begin() const;
@@ -41,11 +41,11 @@ namespace Tiq {
 
 			const_node_ptr_t find(comparator_fn_t comp) const;
 			const_node_ptr_t find(const_node_ptr_t node, comparator_fn_t comp) const;
-			const_node_ptr_t find_min(const_node_ptr_t node) const;
-			const_node_ptr_t find_max(const_node_ptr_t node) const;
+			const_node_ptr_t find_min(const_node_ptr_t node = nullptr) const;
+			const_node_ptr_t find_max(const_node_ptr_t node = nullptr) const;
 			const_node_ptr_t find_next(const_node_ptr_t node) const;
 			const_node_ptr_t find_prev(const_node_ptr_t node) const;
-			const_node_ptr_t insert(const_node_ptr_t node, T&& data);
+			const_node_ptr_t insert(const_node_ptr_t node, T data);
 			const_node_ptr_t erase(const_node_ptr_t node);
 			void clear();
 			size_t size() const;
@@ -65,6 +65,8 @@ namespace Tiq {
 			node_ptr_t root_;
 			node_ptr_t begin_;
 			node_ptr_t end_;
+
+			A<Node> alloc_;
 	};
 }
 
