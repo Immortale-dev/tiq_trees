@@ -29,9 +29,14 @@ namespace TEST {
 		    }
 	};
 
-	using node_t = typename Tiq::Tree<int>::node_ptr_t;
+	class MyNode : public Tiq::Tree::Node<int> {
+		public:
+			using value_type = int;
+	};
 
-	using MyTree = Tiq::Tree<int, MyAllocator>;
+	using node_t = MyNode;
+
+	using MyTree = Tiq::Tree::Tree<node_t, MyAllocator<node_t>>;
 
 	template<typename T>
 	struct bs_find {
@@ -51,7 +56,7 @@ namespace TEST {
 		std::vector<std::pair<int,int>> res;
 		auto start = tree->begin();
 		while (!start->is_end()) {
-			res.push_back({ start->data(), start->parent() ? start->parent()->data() : 0  });
+			res.push_back({ start->data(), tree->parent(start) ? tree->parent(start)->data() : 0  });
 			start = tree->find_next(start);
 		}
 		return res;
@@ -95,12 +100,12 @@ DESCRIBE("Tiq::Tree", {
 				auto b = tree->begin();
 				int end_cnt = 0;
 				while(!b->is_end()) {
-					if (b->left()->is_end()) {
-						EXPECT(b->left()->parent()).toBe(b);
+					if (tree->left(b)->is_end()) {
+						EXPECT(tree->parent(tree->left(b))).toBe(b);
 						++end_cnt;
 					}
-					if (b->right()->is_end()) {
-						EXPECT(b->right()->parent()).toBe(b);
+					if (tree->right(b)->is_end()) {
+						EXPECT(tree->parent(tree->right(b))).toBe(b);
 						++end_cnt;
 					}
 					b = tree->find_next(b);
@@ -125,8 +130,8 @@ DESCRIBE("Tiq::Tree", {
 
 			IT("should successfully add item with the same value", {
 				auto node = tree->find(bs_find(8));
-				auto min = tree->find_min(node->right());
-				auto left = min->is_end() ? min : min->left();
+				auto min = tree->find_min(tree->right(node));
+				auto left = min->is_end() ? min : tree->left(min);
 				tree->insert(left, 8);
 				auto orders = get_value_orders(tree);
 
@@ -138,14 +143,14 @@ DESCRIBE("Tiq::Tree", {
 			});
 
 			IT("should not find element in wrong subtree", {
-				auto wrong_subtree = tree->root()->right();
+				auto wrong_subtree = tree->right(tree->root());
 				auto node = tree->find(wrong_subtree, bs_find(3));
 
 				EXPECT(node->is_end()).toBe(true);
 			});
 
 			IT("should find element in right subtree", {
-				auto right_subtree = tree->root()->left();
+				auto right_subtree = tree->left(tree->root());
 				auto node = tree->find(right_subtree, bs_find(3));
 
 				EXPECT(node->is_end()).toBe(false);
@@ -153,7 +158,7 @@ DESCRIBE("Tiq::Tree", {
 			});
 
 			IT("should find min node", {
-				auto subtree = tree->root()->right();
+				auto subtree = tree->right(tree->root());
 				auto node = tree->find_min(subtree);
 				auto node2 = tree->find_min();
 
@@ -164,7 +169,7 @@ DESCRIBE("Tiq::Tree", {
 			});
 
 			IT("should find max node", {
-				auto subtree = tree->root()->right();
+				auto subtree = tree->right(tree->root());
 				auto node = tree->find_max(subtree);
 				auto node2 = tree->find_max();
 
@@ -175,14 +180,14 @@ DESCRIBE("Tiq::Tree", {
 			});
 
 			IT("shuld return the same node when find_min performed on an end node", {
-				auto sub = tree->find_min(tree->root()->right())->left();
+				auto sub = tree->left(tree->find_min(tree->right(tree->root())));
 				auto node = tree->find_min(sub);
 
 				EXPECT(node).toBe(sub);
 			});
 
 			IT("should return the same node when find_max performed on an end node", {
-				auto sub = tree->find_max(tree->root()->left())->right();
+				auto sub = tree->right(tree->find_max(tree->left(tree->root())));
 				auto node = tree->find_min(sub);
 
 				EXPECT(node).toBe(sub);
@@ -197,7 +202,7 @@ DESCRIBE("Tiq::Tree", {
 
 			IT("should correctly find end node", {
 				auto node = tree->end();
-				auto prev = node->parent();
+				auto prev = tree->parent(node);
 
 				EXPECT(prev->is_end()).toBe(false);
 				EXPECT(prev->data()).toBe(10);
@@ -205,15 +210,15 @@ DESCRIBE("Tiq::Tree", {
 
 			IT("should correctly find next nodes", {
 				auto n1 = tree->find_next(tree->find(bs_find(5)));
-				auto n2 = tree->find_next(tree->find(bs_find(5))->right());
-				auto n3 = tree->find_next(tree->find(bs_find(5))->left());
+				auto n2 = tree->find_next(tree->right(tree->find(bs_find(5))));
+				auto n3 = tree->find_next(tree->left(tree->find(bs_find(5))));
 				auto n4 = tree->find_next(tree->find(bs_find(6)));
 				auto n5 = tree->find_next(tree->find_min());
 				auto n6 = tree->find_next(tree->find_max());
-				auto n7 = tree->find_next(tree->find_max()->right());
-				auto n8 = tree->find_next(tree->find_max()->left());
-				auto n9 = tree->find_next(tree->find_min()->right());
-				auto n10 = tree->find_next(tree->find_min()->left());
+				auto n7 = tree->find_next(tree->right(tree->find_max()));
+				auto n8 = tree->find_next(tree->left(tree->find_max()));
+				auto n9 = tree->find_next(tree->right(tree->find_min()));
+				auto n10 = tree->find_next(tree->left(tree->find_min()));
 
 				EXPECT(n1->is_end()).toBe(false);
 				EXPECT(n1->data()).toBe(6);
@@ -239,15 +244,15 @@ DESCRIBE("Tiq::Tree", {
 
 			IT("should correctly find prev nodes", {
 				auto n1 = tree->find_prev(tree->find(bs_find(5)));
-				auto n2 = tree->find_prev(tree->find(bs_find(5))->right());
-				auto n3 = tree->find_prev(tree->find(bs_find(5))->left());
+				auto n2 = tree->find_prev(tree->right(tree->find(bs_find(5))));
+				auto n3 = tree->find_prev(tree->left(tree->find(bs_find(5))));
 				auto n4 = tree->find_prev(tree->find(bs_find(6)));
 				auto n5 = tree->find_prev(tree->find_min());
 				auto n6 = tree->find_prev(tree->find_max());
-				auto n7 = tree->find_prev(tree->find_max()->right());
-				auto n8 = tree->find_prev(tree->find_max()->left());
-				auto n9 = tree->find_prev(tree->find_min()->right());
-				auto n10 = tree->find_prev(tree->find_min()->left());
+				auto n7 = tree->find_prev(tree->right(tree->find_max()));
+				auto n8 = tree->find_prev(tree->left(tree->find_max()));
+				auto n9 = tree->find_prev(tree->right(tree->find_min()));
+				auto n10 = tree->find_prev(tree->left(tree->find_min()));
 
 				EXPECT(n1->is_end()).toBe(false);
 				EXPECT(n1->data()).toBe(4);
@@ -258,7 +263,7 @@ DESCRIBE("Tiq::Tree", {
 				EXPECT(n4->is_end()).toBe(false);
 				EXPECT(n4->data()).toBe(5);
 				EXPECT(n5->is_end()).toBe(true);
-				EXPECT(n5).toBe(tree->begin()->left());
+				EXPECT(n5).toBe(tree->left(tree->begin()));
 				EXPECT(n6->is_end()).toBe(false);
 				EXPECT(n6->data()).toBe(9);
 				EXPECT(n7->is_end()).toBe(false);
@@ -279,11 +284,11 @@ DESCRIBE("Tiq::Tree", {
 				auto n3 = tree->find(bs_find(6));
 
 				EXPECT(n1->is_end()).toBe(true);
-				EXPECT(n1).toBe(tree->begin()->left());
+				EXPECT(n1).toBe(tree->left(tree->begin()));
 				EXPECT(n2->is_end()).toBe(true);
 				EXPECT(n2).toBe(tree->end());
 				EXPECT(n3->is_end()).toBe(true);
-				EXPECT(n3->parent()->data()).toBe(5);
+				EXPECT(tree->parent(n3)->data()).toBe(5);
 			});
 
 			DESCRIBE("erase left subtree", {
@@ -306,12 +311,12 @@ DESCRIBE("Tiq::Tree", {
 					auto b = tree->begin();
 					int end_cnt = 0;
 					while(!b->is_end()) {
-						if (b->left()->is_end()) {
-							EXPECT(b->left()->parent()).toBe(b);
+						if (tree->left(b)->is_end()) {
+							EXPECT(tree->parent(tree->left(b))).toBe(b);
 							++end_cnt;
 						}
-						if (b->right()->is_end()) {
-							EXPECT(b->right()->parent()).toBe(b);
+						if (tree->right(b)->is_end()) {
+							EXPECT(tree->parent(tree->right(b))).toBe(b);
 							++end_cnt;
 						}
 						b = tree->find_next(b);

@@ -4,33 +4,41 @@
 #include <functional>
 #include <type_traits>
 
-namespace Tiq {
-	template<class T, template<typename> class A = std::allocator>
+namespace Tiq::Tree {
+	class InternalNode {
+		template<class N, class A> friend class Tree;
+		using node_ptr_t = InternalNode*;
+
+		public:
+			virtual ~InternalNode(){}
+			bool is_end() const { return is_end_; }
+
+		private:
+			node_ptr_t parent_ = nullptr;
+			node_ptr_t left_ = nullptr;
+			node_ptr_t right_ = nullptr;
+			bool color_ = 0;
+			bool is_end_ = 1;
+	};
+
+	template<class T>
+	class Node : public InternalNode {
+		public:
+			using value_type = T;
+
+			T& data() { return data_; }
+
+		private:
+			T data_ = {};
+	};
+
+	template<class N, class A = std::allocator<N>>
 	class Tree {
 		public:
-			class Node;
-			using node_ptr_t = Node*;
-			using const_node_ptr_t = typename std::add_const<node_ptr_t>::type;
+			using T = typename N::value_type;
+			using node_ptr_t = InternalNode*;
+			using const_node_ptr_t = N*;
 			using comparator_fn_t = std::function<int(T&)>;
-
-			class Node{
-				friend Tree;
-
-				public:
-					const_node_ptr_t left() const { return left_; };
-					const_node_ptr_t right() const { return right_; };
-					const_node_ptr_t parent() const { return parent_; };
-					T& data() { return data_; };
-					bool is_end() const { return is_end_;  };
-
-				private:
-					node_ptr_t parent_ = nullptr;
-					node_ptr_t left_ = nullptr;
-					node_ptr_t right_ = nullptr;
-					bool color_ = 0;
-					bool is_end_ = 1;
-					T data_ = {};
-			};
 
 			Tree();
 			virtual ~Tree();
@@ -45,18 +53,31 @@ namespace Tiq {
 			const_node_ptr_t find_max(const_node_ptr_t node = nullptr) const;
 			const_node_ptr_t find_next(const_node_ptr_t node) const;
 			const_node_ptr_t find_prev(const_node_ptr_t node) const;
+			const_node_ptr_t parent(const_node_ptr_t node) const;
+			const_node_ptr_t left(const_node_ptr_t node) const;
+			const_node_ptr_t right(const_node_ptr_t node) const;
 			const_node_ptr_t insert(const_node_ptr_t node, T data);
 			const_node_ptr_t erase(const_node_ptr_t node);
 			void clear();
 			size_t size() const;
 
+		protected:
+			virtual node_ptr_t find(node_ptr_t node, comparator_fn_t comp) const;
+			virtual node_ptr_t find_min(node_ptr_t node) const;
+			virtual node_ptr_t find_max(node_ptr_t node) const;
+			virtual node_ptr_t insert(node_ptr_t node);
+			virtual node_ptr_t erase(node_ptr_t node);
+
+			virtual void left_rotate(node_ptr_t x);
+			virtual void right_rotate(node_ptr_t x);
+			virtual void transplant(node_ptr_t u, node_ptr_t v);
+
 		private:
-			void left_rotate(node_ptr_t x);
-			void right_rotate(node_ptr_t x);
 			void fix_delete(node_ptr_t x);
 			void fix_insert(node_ptr_t x);
-			void rb_transplant(node_ptr_t u, node_ptr_t v);
 
+			const_node_ptr_t to_public_node(node_ptr_t node) const;
+			node_ptr_t to_internal_node(const_node_ptr_t node) const;
 			node_ptr_t create_empty_node();
 			void delete_node(node_ptr_t node);
 			void dfs(node_ptr_t node, std::function<void(node_ptr_t)> fn);
@@ -66,9 +87,9 @@ namespace Tiq {
 			node_ptr_t begin_;
 			node_ptr_t end_;
 
-			A<Node> alloc_;
+			A alloc_;
 	};
-}
+} // namespace Tiq::Tree
 
 #include "tq_tree.hpp"
 
