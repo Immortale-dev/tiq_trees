@@ -22,7 +22,7 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::root() con
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find(node_ptr_t node, comparator_fn_t comp) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_(node_ptr_t node, comparator_fn_t comp) const
 {
 	while(true){
 		if(node->is_end()){
@@ -44,17 +44,17 @@ typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find(node_ptr_t 
 template<class N, class A>
 typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find(const_node_ptr_t cnode, comparator_fn_t comp) const
 {
-	return to_public_node(find(to_internal_node(cnode), comp));
+	return to_public_node(find_(to_internal_node(cnode), comp));
 }
 
 template<class N, class A>
 typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find(comparator_fn_t comp) const
 {
-	return to_public_node(find(root_, comp));
+	return to_public_node(find_(root_, comp));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_min(node_ptr_t node) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_min_(node_ptr_t node) const
 {
 	if(node->is_end()){
 		return node;
@@ -69,18 +69,18 @@ template<class N, class A>
 typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_min(const_node_ptr_t cnode) const
 {
 	node_ptr_t node = cnode ? to_internal_node(cnode) : root_;
-	return to_public_node(find_min(node));
+	return to_public_node(find_min_(node));
 }
 
 template<class N, class A>
 typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_max(const_node_ptr_t cnode) const
 {
 	node_ptr_t node = cnode ? to_internal_node(cnode) : root_;
-	return to_public_node(find_max(node));
+	return to_public_node(find_max_(node));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_max(node_ptr_t node) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_max_(node_ptr_t node) const
 {
 	if(node->is_end()){
 		return node;
@@ -105,7 +105,7 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_next(
 		x = x->parent_;
 	}
 	if (!x->right_->is_end()) {
-		return to_public_node(find_min(x->right_));
+		return to_public_node(find_min_(x->right_));
 	}
 	node_ptr_t y = x->parent_;
 	while (y != nullptr && x == y->right_) {
@@ -132,7 +132,7 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_prev(
 		x = x->parent_;
 	}
 	if (!x->left_->is_end()) {
-		return to_public_node(find_max(x->left_));
+		return to_public_node(find_max_(x->left_));
 	}
 	node_ptr_t y = x->parent_;
 	while (y != nullptr && x == y->left_) {
@@ -168,11 +168,11 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::insert(con
 {
 	cnode->data() = data;
 	node_ptr_t node = to_internal_node(cnode);
-	return to_public_node(insert(node));
+	return to_public_node(insert_(node));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::insert(node_ptr_t node)
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::insert_(node_ptr_t node)
 {
 	// If the node is not end, just return as the structure wasn't currupted.
 	if (!node->is_end()) {
@@ -215,11 +215,11 @@ typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::insert(node_ptr_
 template<class N, class A>
 typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::erase(const_node_ptr_t cnode)
 {
-	return to_public_node(erase(to_internal_node(cnode)));
+	return to_public_node(erase_(to_internal_node(cnode)));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::erase(node_ptr_t node)
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::erase_(node_ptr_t node)
 {
 	node_ptr_t z = node;
 	if (z->is_end()) {
@@ -251,7 +251,7 @@ typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::erase(node_ptr_t
 		x = z->left_;
 		transplant(z, x);
 	} else {
-		y = find_min(z->right_);
+		y = find_min_(z->right_);
 		y_original_color = y->color_;
 		x = y->right_;
 
@@ -421,6 +421,24 @@ void Tiq::Tree::Tree<N,A>::transplant(node_ptr_t u, node_ptr_t v)
 }
 
 template<class N, class A>
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::left_(node_ptr_t x)
+{
+	return x->left_;
+}
+
+template<class N, class A>
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::right_(node_ptr_t x)
+{
+	return x->right_;
+}
+
+template<class N, class A>
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::parent_(node_ptr_t x)
+{
+	return x->parent_;
+}
+
+template<class N, class A>
 typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::to_public_node(node_ptr_t node) const
 {
 	return const_cast<const_node_ptr_t>(static_cast<N*>(node));
@@ -508,7 +526,7 @@ void Tiq::Tree::Tree<N,A>::fix_insert(node_ptr_t k)
 template<class N, class A>
 typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::create_empty_node()
 {
-	node_ptr_t node = std::allocator_traits<A>::allocate(alloc_, 1);
+	const_node_ptr_t node = std::allocator_traits<A>::allocate(alloc_, 1);
 	std::allocator_traits<A>::construct(alloc_, node);
 	return node;
 }

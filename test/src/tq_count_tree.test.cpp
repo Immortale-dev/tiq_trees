@@ -1,0 +1,151 @@
+#include <vector>
+
+#include "tq_count_tree.h"
+
+namespace TEST_COUNT {
+	using Node = Tiq::Tree::CountNode<int>;
+	using MyTree = Tiq::Tree::CountTree<Node>;
+
+	std::vector<Node*> get_nodes(MyTree* tree) {
+		std::vector<Node*> res;
+		auto start = tree->begin();
+		while (!start->is_end()) {
+			res.push_back(start);
+			start = tree->find_next(start);
+		}
+		return res;
+	}
+
+	template<typename T>
+	struct bs_find {
+		bs_find(T val): val_(val) {}
+
+		int operator()(T& n) {
+			if (n == val_) return 0;
+			if (n > val_) return -1;
+			return 1;
+		}
+
+		private:
+			T val_;
+	};
+}
+
+SCENARIO_START
+
+using namespace TEST_COUNT;
+
+DESCRIBE("Tiq::Tree::CountTree", {
+
+	DESCRIBE("init the tree", {
+		MyTree* ct;
+		BEFORE_EACH({
+			ct = new MyTree();
+		});
+		AFTER_EACH({
+			delete ct;
+		});
+
+		IT("should show 0 as root size", {
+			EXPECT(ct->root()->count()).toBe(0);
+		});
+
+		DESCRIBE("Add 10 items with keys from 1 to 10 to the end of the tree", {
+			BEFORE_EACH({
+				for(int i=1;i<=10;i++){
+					ct->insert(ct->end(), i);
+				}
+			});
+
+			IT("should calculate counts correctly", {
+				auto nodes = get_nodes(ct);
+
+				std::vector<int> counts(10);
+				std::transform(nodes.begin(), nodes.end(), counts.begin(), [](auto n){ return n->count(); });
+
+				EXPECT(counts).toBeIterableEqual(std::vector<int>{1, 3, 1, 10, 1, 6, 1, 4, 2, 1});
+			});
+
+			IT("should assign 0 to leaves count", {
+				auto nodes = get_nodes(ct);
+
+				for (auto n : nodes) {
+					if (ct->left(n)->is_end()) {
+						EXPECT(ct->left(n)->count()).toBe(0);
+					}
+					if (ct->right(n)->is_end()) {
+						EXPECT(ct->right(n)->count()).toBe(0);
+					}
+				}
+			});
+
+			DESCRIBE("erase left subtree", {
+				BEFORE_EACH({
+					ct->erase(ct->find(bs_find(1)));
+					ct->erase(ct->find(bs_find(2)));
+					ct->erase(ct->find(bs_find(3)));
+				});
+
+				IT("should correctly update counts", {
+					auto nodes = get_nodes(ct);
+
+					std::vector<int> counts(7);
+					std::transform(nodes.begin(), nodes.end(), counts.begin(), [](auto n){ return n->count(); });
+
+					EXPECT(counts).toBeIterableEqual(std::vector<int>{2, 1, 7, 1, 4, 2, 1});
+				});
+			});
+		});
+
+		DESCRIBE("Add 10 items in next order: {6,1,8,2,4,5,10,9,7,3}", {
+			BEFORE_EACH({
+				std::vector<int> v{6,1,8,2,4,5,10,9,7,3};
+				for(auto it : v){
+					ct->insert(ct->find(bs_find(it)), it);
+				}
+			});
+
+			IT("should keep counts correctly", {
+				auto nodes = get_nodes(ct);
+
+				std::vector<int> counts(10);
+				std::transform(nodes.begin(), nodes.end(), counts.begin(), [](auto n){ return n->count(); });
+
+				EXPECT(counts).toBeIterableEqual(std::vector<int>{1, 5, 1, 3, 1, 10, 1, 2, 4, 1});
+			});
+		});
+
+		DESCRIBE("Add 100 items in a weird order", {
+			BEFORE_EACH({
+				for(int i=1;i<=20;i++) {
+					ct->insert(ct->find(bs_find(i)), i);
+				}
+				for(int i=80;i>=41;i--) {
+					ct->insert(ct-find(bs_find(i)), i);
+				}
+				for(int i=21;i<=40;i++) {
+					ct->insert(ct-find(bs_find(i)), i);
+				}
+				for(int i=100;i>=81;i--) {
+					ct->insert(ct-find(bs_find(i)), i);
+				}
+			});
+
+			IT("should calculate counts correctly", {
+				// TODO: finish test
+			});
+
+			DESCRIBE("Remove 50 items in a weird order", {
+				BEFORE_EACH({
+					// TODO: remove items
+				});
+
+				IT("should update counts correctly", {
+					// TODO: finish test
+				});
+			});
+		});
+	});
+});
+
+SCENARIO_END

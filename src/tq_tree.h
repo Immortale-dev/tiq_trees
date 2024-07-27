@@ -13,10 +13,12 @@ namespace Tiq::Tree {
 			virtual ~InternalNode(){}
 			bool is_end() const { return is_end_; }
 
-		private:
+		protected:
 			node_ptr_t parent_ = nullptr;
 			node_ptr_t left_ = nullptr;
 			node_ptr_t right_ = nullptr;
+
+		private:
 			bool color_ = 0;
 			bool is_end_ = 1;
 	};
@@ -62,24 +64,29 @@ namespace Tiq::Tree {
 			size_t size() const;
 
 		protected:
-			virtual node_ptr_t find(node_ptr_t node, comparator_fn_t comp) const;
-			virtual node_ptr_t find_min(node_ptr_t node) const;
-			virtual node_ptr_t find_max(node_ptr_t node) const;
-			virtual node_ptr_t insert(node_ptr_t node);
-			virtual node_ptr_t erase(node_ptr_t node);
+			virtual node_ptr_t find_(node_ptr_t node, comparator_fn_t comp) const;
+			virtual node_ptr_t find_min_(node_ptr_t node) const;
+			virtual node_ptr_t find_max_(node_ptr_t node) const;
+			virtual node_ptr_t insert_(node_ptr_t node);
+			virtual node_ptr_t erase_(node_ptr_t node);
 
 			virtual void left_rotate(node_ptr_t x);
 			virtual void right_rotate(node_ptr_t x);
 			virtual void transplant(node_ptr_t u, node_ptr_t v);
 
-		private:
-			void fix_delete(node_ptr_t x);
-			void fix_insert(node_ptr_t x);
+			node_ptr_t left_(node_ptr_t);
+			node_ptr_t right_(node_ptr_t);
+			node_ptr_t parent_(node_ptr_t);
 
 			const_node_ptr_t to_public_node(node_ptr_t node) const;
 			node_ptr_t to_internal_node(const_node_ptr_t node) const;
 			node_ptr_t create_empty_node();
 			void delete_node(node_ptr_t node);
+
+		private:
+			void fix_delete(node_ptr_t x);
+			void fix_insert(node_ptr_t x);
+
 			void dfs(node_ptr_t node, std::function<void(node_ptr_t)> fn);
 
 			size_t count_;

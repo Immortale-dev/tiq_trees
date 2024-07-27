@@ -67,7 +67,7 @@ SCENARIO_START
 
 using namespace TEST;
 
-DESCRIBE("Tiq::Tree", {
+DESCRIBE("Tiq::Tree::Tree", {
 	DESCRIBE("Initialize with int template parameter", {
 		MyTree* tree;
 		BEFORE_EACH({
