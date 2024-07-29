@@ -1,4 +1,5 @@
 #include <vector>
+#include <functional>
 
 #include "tq_count_tree.h"
 
@@ -29,6 +30,16 @@ namespace TEST_COUNT {
 		private:
 			T val_;
 	};
+
+	int dfs(MyTree* tree, Node* node, std::function<void(Node*,int)> callback) {
+		if (node->is_end()) {
+			callback(node, 0);
+			return 0;
+		}
+		int res = dfs(tree, tree->left(node), callback) + dfs(tree, tree->right(node), callback) + 1;
+		callback(node, res);
+		return res;
+	}
 }
 
 SCENARIO_START
@@ -121,27 +132,39 @@ DESCRIBE("Tiq::Tree::CountTree", {
 					ct->insert(ct->find(bs_find(i)), i);
 				}
 				for(int i=80;i>=41;i--) {
-					ct->insert(ct-find(bs_find(i)), i);
+					ct->insert(ct->find(bs_find(i)), i);
 				}
 				for(int i=21;i<=40;i++) {
-					ct->insert(ct-find(bs_find(i)), i);
+					ct->insert(ct->find(bs_find(i)), i);
 				}
 				for(int i=100;i>=81;i--) {
-					ct->insert(ct-find(bs_find(i)), i);
+					ct->insert(ct->find(bs_find(i)), i);
 				}
 			});
 
 			IT("should calculate counts correctly", {
-				// TODO: finish test
+				dfs(ct, ct->root(), [](Node* n, int d){
+					EXPECT(n->count()).toBe(d);
+				});
 			});
 
-			DESCRIBE("Remove 50 items in a weird order", {
+			DESCRIBE("Remove 40 items in a weird order", {
 				BEFORE_EACH({
-					// TODO: remove items
+					for (int i=21;i<=40;i++) {
+						ct->erase(ct->find(bs_find(i)));
+					}
+					for (int i=80;i>=71;i--) {
+						ct->erase(ct->find(bs_find(i)));
+					}
+					for (int i=61;i<=70;i++) {
+						ct->erase(ct->find(bs_find(i)));
+					}
 				});
 
 				IT("should update counts correctly", {
-					// TODO: finish test
+					dfs(ct, ct->root(), [](Node* n, int d){
+						EXPECT(n->count()).toBe(d);
+					});
 				});
 			});
 		});
