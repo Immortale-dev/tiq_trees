@@ -148,6 +148,24 @@ DESCRIBE("Tiq::Tree::CountTree", {
 				});
 			});
 
+			IT("should correctly find index for all elements", {
+				auto b = ct->begin();
+				size_t ind = 0;
+				while(!b->is_end()) {
+					EXPECT(ct->find_index(b)).toBe(ind++);
+					b = ct->find_next(b);
+				}
+			});
+
+			IT("should find correct nth element", {
+				auto b = ct->begin();
+				size_t ind = 0;
+				while(!b->is_end()) {
+					EXPECT(ct->find_nth(ind++)).toBe(b);
+					b = ct->find_next(b);
+				}
+			});
+
 			DESCRIBE("Remove 40 items in a weird order", {
 				BEFORE_EACH({
 					for (int i=21;i<=40;i++) {
@@ -165,6 +183,24 @@ DESCRIBE("Tiq::Tree::CountTree", {
 					dfs(ct, ct->root(), [](Node* n, int d){
 						EXPECT(n->count()).toBe(d);
 					});
+				});
+
+				IT("should correctly find index for all elements", {
+					auto b = ct->begin();
+					size_t ind = 0;
+					while(!b->is_end()) {
+						EXPECT(ct->find_index(b)).toBe(ind++);
+						b = ct->find_next(b);
+					}
+				});
+
+				IT("should find correct nth element", {
+					auto b = ct->begin();
+					size_t ind = 0;
+					while(!b->is_end()) {
+						EXPECT(ct->find_nth(ind++)).toBe(b);
+						b = ct->find_next(b);
+					}
 				});
 			});
 		});

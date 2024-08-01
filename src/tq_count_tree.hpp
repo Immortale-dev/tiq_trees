@@ -1,4 +1,60 @@
+#include <iostream> // TODO: remove
+
+#include <stdexcept>
+
 #include "tq_tree.h"
+
+template<class N, class A>
+typename Tiq::Tree::CountTree<N,A>::const_node_ptr_t Tiq::Tree::CountTree<N,A>::find_nth(const_node_ptr_t node, size_t count) const
+{
+	if (node->is_end()) {
+		return node;
+	}
+	if (node->count() <= count) {
+		return this->right(this->find_max(node));
+	}
+	while(true) {
+		size_t left_count = this->left(node)->count();
+		if (left_count == count) {
+			return node;
+		}
+		if (left_count < count) {
+			count -= left_count + 1; // + current node.
+			node = this->right(node);
+		} else {
+			node = this->left(node);
+		}
+	}
+}
+
+template<class N, class A>
+typename Tiq::Tree::CountTree<N,A>::const_node_ptr_t Tiq::Tree::CountTree<N,A>::find_nth(size_t count) const
+{
+	return find_nth(this->root(), count);
+}
+
+template<class N, class A>
+size_t Tiq::Tree::CountTree<N,A>::find_index(const_node_ptr_t node, const_node_ptr_t parent) const
+{
+	size_t count = 0;
+	if (!node->is_end()) {
+		count += this->left(node)->count();
+	}
+	if (!parent) {
+		parent = this->root();
+	}
+	while(node != parent) {
+		auto par = this->parent(node);
+		if (!par) {
+			throw std::logic_error("node is not child of parent.");
+		}
+		if (this->right(par) == node) {
+			count += this->left(par)->count() + 1;
+		}
+		node = par;
+	}
+	return count;
+}
 
 template<class N, class A>
 typename Tiq::Tree::CountTree<N,A>::node_ptr_t Tiq::Tree::CountTree<N,A>::insert_(node_ptr_t node)

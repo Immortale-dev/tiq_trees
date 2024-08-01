@@ -24,6 +24,10 @@ namespace Tiq::Tree {
 			using node_ptr_t = InternalNode*;
 			using const_node_ptr_t = N*;
 
+			const_node_ptr_t find_nth(size_t count) const;
+			const_node_ptr_t find_nth(const_node_ptr_t node, size_t count) const;
+			size_t find_index(const_node_ptr_t node, const_node_ptr_t parent = nullptr) const;
+
 		protected:
 			node_ptr_t insert_(node_ptr_t node) override;
 			node_ptr_t erase_(node_ptr_t node) override;
@@ -31,7 +35,7 @@ namespace Tiq::Tree {
 			void left_rotate(node_ptr_t x) override;
 			void right_rotate(node_ptr_t x) override;
 			void transplant(node_ptr_t u, node_ptr_t v) override;
-			void calc_count(node_ptr_t x);
+			virtual void calc_count(node_ptr_t x);
 
 		private:
 			void calc_upward(node_ptr_t x);
