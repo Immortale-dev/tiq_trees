@@ -43,7 +43,17 @@ size_t Tiq::Tree::LayersCollection<K,A>::count(K key)
 
 	if (!node || node->is_end()) return 0;
 
-	return this->left(node)->count() + node->value_;
+	size_t value = this->left(node)->count() + node->value_;
+
+	while(node) {
+		auto par = this->parent(node);
+		if (par && this->right(par) == node) {
+			value += this->left(par)->count() + par->value_;
+		}
+		node = par;
+	}
+
+	return value;
 }
 
 template<class K, class A>
@@ -63,15 +73,15 @@ void Tiq::Tree::LayersCollection<K,A>::add(key_t key, long int value)
 template<class K, class A>
 void Tiq::Tree::LayersCollection<K,A>::merge(const LayersCollection<K,A>& collection)
 {
-	auto min = collection->find_min();
+	auto min = collection.find_min();
 	while (!min->is_end()) {
 		this->add(min->data(), min->value_);
-		min = collection->find_next(min);
+		min = collection.find_next(min);
 	}
 }
 
 template<class K, class A>
-Tiq::Tree::LayerStatNode<K>* Tiq::Tree::LayerCollection<K,A>::bs_find(K key)
+Tiq::Tree::LayerStatNode<K>* Tiq::Tree::LayersCollection<K,A>::bs_find(K key)
 {
 	auto node = this->root();
 	while(!node->is_end()) {
@@ -89,15 +99,18 @@ Tiq::Tree::LayerStatNode<K>* Tiq::Tree::LayerCollection<K,A>::bs_find(K key)
 }
 
 template<class K, class A>
-void Tiq::Tree::LayerCollection<K,A>::calc_count(node_ptr_t x)
+void Tiq::Tree::LayersCollection<K,A>::calc_count(node_ptr_t x)
 {
+	CountTree<LayerStatNode<K>,A>::calc_count(x);
+
 	if (x->is_end()) return;
 
-	auto left = this->left(x);
-	auto right = this->right(x);
-	auto n = this->to_public_node(x);
+	auto node = this->to_public_node(x);
 
-	n->count_ = left->count() + right->count() + n->value_;
+	auto left = this->left(node);
+	auto right = this->right(node);
+
+	node->count_ = left->count() + right->count() + node->value_;
 }
 
 // LayerTree
@@ -105,34 +118,39 @@ void Tiq::Tree::LayerCollection<K,A>::calc_count(node_ptr_t x)
 template<class N, class A>
 typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::insert(const_node_ptr_t node, T data, layer_key_t layer)
 {
-	if (node->is_end()) {
-		throw std::logic_error("The node is not end node.");
+	if (!node->is_end()) {
+		throw std::logic_error("The node is not end node");
 	}
 	node->layer_ = layer;
 	node->data() = data;
-	auto node = this->insert_(node);
-	upward_layer_count_update(node, layer);
-	return node;
+	auto n = this->insert_(node);
+	upward_layer_count_update(n, layer);
+	return this->to_public_node(n);
 }
 
 template<class N, class A>
 typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::update(const_node_ptr_t node, T data)
 {
-	if (!node->is_end()) {
-		throw std::logic_error("Cannot update end node.");
+	if (node->is_end()) {
+		throw std::logic_error("Cannot update end node");
 	}
+	layer_key_t layer = node->layer();
 	node->data() = data;
-	auto node = this->insert_(node);
-	upward_layer_count_update(node, layer);
-	return node;
+	auto n = this->insert_(node);
+	upward_layer_count_update(n, layer);
+	return this->to_public_node(n);
 }
 
 template<class N, class A>
 typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::erase(const_node_ptr_t node)
 {
-	auto node = this->erase_(node);
-	upward_layer_count_update(node, layer);
-	return node;
+	if (node->is_end()) {
+		throw std::logic_error("Cannot erase end node");
+	}
+	layer_key_t layer = node->layer();
+	auto n = this->erase_(node);
+	upward_layer_count_update(n, layer);
+	return this->to_public_node(n);
 }
 
 template<class N, class A>
@@ -146,45 +164,24 @@ typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::
 }
 
 template<class N, class A>
-typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::find_min(const_node_ptr_t node = nullptr) const {
+typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::find_min(const_node_ptr_t node) const {
 	return CountTree<N,A>::find_min(node);
 }
 
 template<class N, class A>
-typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::find_max(const_node_ptr_t node = nullptr) const {
+typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::find_max(const_node_ptr_t node) const {
 	return CountTree<N,A>::find_max(node);
-]
+}
 
 template<class N, class A>
 typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::find_min(const_node_ptr_t node, layer_key_t layer) const {
-	const_node_ptr_t n = node;
-	const_node_ptr_t saved = nullptr;
-	while(!n->is_end()) {
-		if (n->layer() <= layer) {
-			saved = n;
-		}
-		n = this->left(n);
-	}
-	if (saved) {
-		return saved;
-	}
-	return n;
+	return this->find_nth(node, 0, layer);
 }
 
 template<class N, class A>
 typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::find_max(const_node_ptr_t node, layer_key_t layer) const {
-	const_node_ptr_t n = node;
-	const_node_ptr_t saved = nullptr;
-	while(!n->is_end()) {
-		if (n->layer() <= layer) {
-			saved = n;
-		}
-		n = this->right(n);
-	}
-	if (saved) {
-		return saved;
-	}
-	return n;
+	size_t size = node->count(layer);
+	return this->find_nth(node, size-1, layer);
 }
 
 template<class N, class A>
@@ -213,29 +210,57 @@ typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::
 		if (node == this->root()) {
 			return node;
 		}
-
-		while(node) {
-			const_node_ptr_t par = this->parent(node);
-			if (!par) {
-				return this->end();
-			}
-			if (node == this->right(par)) {
-				node = par;
-				continue;
-			}
-			if (node == this->left(par) && par->layer() == layer) {
-				return par;
-			}
+	}
+	if (!node->is_end() && this->right(node)->count(layer)) {
+		return find_nth(this->right(node), 0, layer);
+	}
+	while(true) {
+		const_node_ptr_t par = this->parent(node);
+		if (!par) {
+			return this->end();
+		}
+		if (node == this->right(par)) {
 			node = par;
-			if (this->right(node)->count(layer)) {
-				return find_nth(this->right(node), 0, layer);
-			}
+			continue;
+		}
+		if (node == this->left(par) && par->is_layer(layer)) {
+			return par;
+		}
+		node = par;
+		if (this->right(node)->count(layer)) {
+			return find_nth(this->right(node), 0, layer);
 		}
 	}
 }
 
 template<class N, class A>
-typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::find_prev(const_node_ptr_t node, layer_key_t layer) const;
+typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::find_prev(const_node_ptr_t node, layer_key_t layer) const {
+	if (node->is_end()) {
+		if (node == this->root()) {
+			return node;
+		}
+	}
+	if (!node->is_end() && this->left(node)->count(layer)) {
+		return find_nth(this->left(node), this->left(node)->count(layer)-1, layer);
+	}
+	while(true) {
+		const_node_ptr_t par = this->parent(node);
+		if (!par) {
+			return this->left(this->begin());
+		}
+		if (node == this->left(par)) {
+			node = par;
+			continue;
+		}
+		if (node == this->right(par) && par->is_layer(layer)) {
+			return par;
+		}
+		node = par;
+		if (this->left(node)->count(layer)) {
+			return find_nth(this->left(node), this->left(node)->count(layer)-1, layer);
+		}
+	}
+}
 
 template<class N, class A>
 void Tiq::Tree::LayerTree<N,A>::left_rotate(node_ptr_t x)
@@ -248,7 +273,7 @@ void Tiq::Tree::LayerTree<N,A>::left_rotate(node_ptr_t x)
 template<class N, class A>
 void Tiq::Tree::LayerTree<N,A>::right_rotate(node_ptr_t x)
 {
-	CountTree<N,A>::left_rotate(x);
+	CountTree<N,A>::right_rotate(x);
 	wide_count_update(x);
 	wide_count_update(this->parent_(x));
 }
@@ -257,33 +282,32 @@ template<class N, class A>
 void Tiq::Tree::LayerTree<N,A>::transplant(node_ptr_t u, node_ptr_t v)
 {
 	CountTree<N,A>::transplant(u, v);
-	if (this->parent_(v)) {
-		wide_count_update(this->parent_(v));
+	if (!v->is_end()) {
+		wide_count_update(v);
 	}
 }
 
 template<class N, class A>
 void Tiq::Tree::LayerTree<N,A>::upward_layer_count_update(node_ptr_t node, layer_key_t layer)
 {
-	auto n = this->to_public_node(node);
-	while(n && !n->is_end()) {
-		layer_count_update(n, layer);
-		n = this->parent(n);
-	}
+	do {
+		layer_count_update(node, layer);
+	} while((node = this->parent_(node)));
 }
 
 template<class N, class A>
 void Tiq::Tree::LayerTree<N,A>::layer_count_update(node_ptr_t node, layer_key_t layer)
 {
+	if (node->is_end()) return;
 	auto n = this->to_public_node(node);
 	auto left = this->to_public_node(this->left_(node));
 	auto right = this->to_public_node(this->right_(node));
 
 	size_t value = left->layers_.get(layer) + right->layers_.get(layer);
-	if (node->layer_ == layer) {
+	if (n->layer_ == layer) {
 		++value;
 	}
-	n->layers_.set(value);
+	n->layers_.set(layer, value);
 }
 
 template<class N, class A>
@@ -323,11 +347,14 @@ typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::
 	}
 	while(true) {
 		size_t left_count = this->left(node)->count(layer);
-		if (left_count == count) {
+		if (left_count == count && node->is_layer(layer)) {
 			return node;
 		}
-		if (left_count < count) {
-			count -= left_count + 1; // + current node.
+		if (left_count <= count) {
+			count -= left_count;
+			if (node->is_layer(layer)) {
+				--count;
+			}
 			node = this->right(node);
 		} else {
 			node = this->left(node);
@@ -336,13 +363,13 @@ typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::
 }
 
 template<class N, class A>
-typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::find_nth(size_t count, layer_ket_t layer) const
+typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::find_nth(size_t count, layer_key_t layer) const
 {
 	return find_nth(this->root(), count, layer);
 }
 
 template<class N, class A>
-size_t Tiq::Tree::LayerTree<N,A>::find_index(const_node_ptr_t node const_node_ptr_t parent) const
+size_t Tiq::Tree::LayerTree<N,A>::find_index(const_node_ptr_t node, const_node_ptr_t parent) const
 {
 	return CountTree<N,A>::find_index(node, parent);
 }
@@ -364,7 +391,7 @@ size_t Tiq::Tree::LayerTree<N,A>::find_index(const_node_ptr_t node, const_node_p
 		}
 		if (this->right(par) == node) {
 			count += this->left(par)->count(layer);
-			if (par->layer() <= layer) {
+			if (par->is_layer(layer)) {
 				++count;
 			}
 		}
