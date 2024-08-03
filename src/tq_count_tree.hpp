@@ -1,5 +1,3 @@
-#include <iostream> // TODO: remove
-
 #include <stdexcept>
 
 #include "tq_tree.h"
@@ -92,8 +90,8 @@ template<class N, class A>
 void Tiq::Tree::CountTree<N,A>::transplant(node_ptr_t u, node_ptr_t v)
 {
 	Tree<N,A>::transplant(u, v);
-	if (this->parent_(v)) {
-		calc_count(this->parent_(v));
+	if (!v->is_end()) {
+		calc_count(v);
 	}
 }
 
