@@ -1,3 +1,5 @@
+// LayersCollection
+
 template<class K, class A>
 void Tiq::Tree::LayersCollection<K,A>::set(K key, size_t value)
 {
@@ -113,32 +115,118 @@ void Tiq::Tree::LayersCollection<K,A>::calc_count(node_ptr_t x)
 	node->count_ = left->count() + right->count() + node->value_;
 }
 
+// ValuesCollection
+
+template<class K, class T>
+void Tiq::Tree::ValuesCollection<K,T>::set(K key, T value) {
+	auto node = bs_find(key);
+	this->insert(node, {key, value});
+}
+
+template<class K, class T>
+void Tiq::Tree::ValuesCollection<K,T>::unset(K key) {
+	auto node = bs_find(key);
+	if (!node->is_end()) {
+		this->erase(node);
+	}
+}
+
+template<class K, class T>
+T& Tiq::Tree::ValuesCollection<K,T>::get(K key) {
+	auto node = bs_find(key);
+
+	// Get upper bound.
+	node = this->find_next(node);
+
+	// Move one back.
+	node = this->find_prev(node);
+
+	if (!node || node->is_end()) {
+		throw std::logic_error("No data found");
+	}
+
+	return node->data().second;
+}
+
+template<class K, class T>
+T& Tiq::Tree::ValuesCollection<K,T>::get() {
+	auto node = this->parent(this->end());
+
+	if (!node || node->is_end()) {
+		throw std::logic_error("No data found");
+	}
+
+	return node->data().second;
+}
+
+template<class K, class T>
+bool Tiq::Tree::ValuesCollection<K,T>::has(K key) {
+	auto node = bs_find(key);
+
+	// Get upper bound.
+	node = this->find_next(node);
+
+	// Move one back.
+	node = this->find_prev(node);
+
+	return (node && !node->is_end());
+}
+
+template<class K, class T>
+bool Tiq::Tree::ValuesCollection<K,T>::contains(K key) {
+	auto node = bs_find(key);
+
+	return (node && !node->is_end());
+}
+
+template<class K, class T>
+std::vector<K> Tiq::Tree::ValuesCollection<K,T>::keys() {
+	std::vector<K> ret;
+	auto b = this->begin();
+	while(!b->is_end()) {
+		ret.push_back(b->data().first);
+		b = this->find_next(b);
+	}
+	return ret;
+}
+
+template<class K, class T>
+Tiq::Tree::Node<std::pair<K,T>>* Tiq::Tree::ValuesCollection<K,T>::bs_find(K key) {
+	auto node = this->root();
+	while(!node->is_end()) {
+		if (key == node->data().first) {
+			// Item found.
+			break;
+		}
+		if (key > node->data().first) {
+			node = this->right(node);
+		} else {
+			node = this->left(node);
+		}
+	}
+	return node;
+}
+
 // LayerTree
 
 template<class N, class A>
 typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::insert(const_node_ptr_t node, T data, layer_key_t layer)
 {
-	if (!node->is_end()) {
-		throw std::logic_error("The node is not end node");
-	}
-	node->layer_ = layer;
-	node->data() = data;
+	node->values_.set(layer, data);
 	auto n = this->insert_(node);
 	upward_layer_count_update(n, layer);
 	return this->to_public_node(n);
 }
 
 template<class N, class A>
-typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::update(const_node_ptr_t node, T data)
+typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::erase(const_node_ptr_t node, layer_key_t layer)
 {
 	if (node->is_end()) {
-		throw std::logic_error("Cannot update end node");
+		throw std::logic_error("Cannot erase end node");
 	}
-	layer_key_t layer = node->layer();
-	node->data() = data;
-	auto n = this->insert_(node);
-	upward_layer_count_update(n, layer);
-	return this->to_public_node(n);
+	node->values_.unset(layer);
+	upward_layer_count_update(node, layer);
+	return node;
 }
 
 template<class N, class A>
@@ -147,9 +235,12 @@ typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::
 	if (node->is_end()) {
 		throw std::logic_error("Cannot erase end node");
 	}
-	layer_key_t layer = node->layer();
+	std::vector<layer_key_t> keys = node->values_.keys();
+	node->values_.clear();
+	for(auto& k : keys) {
+		upward_layer_count_update(node, k);
+	}
 	auto n = this->erase_(node);
-	upward_layer_count_update(n, layer);
 	return this->to_public_node(n);
 }
 
@@ -282,8 +373,13 @@ template<class N, class A>
 void Tiq::Tree::LayerTree<N,A>::transplant(node_ptr_t u, node_ptr_t v)
 {
 	CountTree<N,A>::transplant(u, v);
+	std::vector<layer_key_t> keys = this->to_public_node(u)->values_.keys();
+
 	if (!v->is_end()) {
 		wide_count_update(v);
+	}
+	for (auto& k : keys) {
+		upward_layer_count_update(v, k);
 	}
 }
 
@@ -304,7 +400,7 @@ void Tiq::Tree::LayerTree<N,A>::layer_count_update(node_ptr_t node, layer_key_t 
 	auto right = this->to_public_node(this->right_(node));
 
 	size_t value = left->layers_.get(layer) + right->layers_.get(layer);
-	if (n->layer_ == layer) {
+	if (n->values_.contains(layer)) {
 		++value;
 	}
 	n->layers_.set(layer, value);
@@ -321,7 +417,9 @@ void Tiq::Tree::LayerTree<N,A>::wide_count_update(node_ptr_t node)
 	layers.clear();
 	layers.merge(left->layers_);
 	layers.merge(right->layers_);
-	layers.add(n->layer(), 1);
+	for (auto& k : n->values_.keys()) {
+		layers.add(k, 1);
+	}
 }
 
 template<class N, class A>

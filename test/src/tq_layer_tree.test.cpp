@@ -44,7 +44,7 @@ namespace TEST_LAYER {
 	void print_tree(MyTree* tree) {
 		dfs(tree, tree->root(), [tree](Node* n, [[maybe_unused]]int a){
 			if (n->is_end()) return 0;
-			std::cout << n->data() << "(" << n->layer()  <<  ")" << " - " << (tree->parent(n) ? tree->parent(n)->data() : 0) << std::endl;
+			std::cout << n->data() << " - " << (tree->parent(n) ? tree->parent(n)->data() : 0) << std::endl;
 			std::cout << "\t" << n->count(1) << std::endl;
 			std::cout << "\t" << n->count(2) << std::endl;
 			std::cout << "\t" << n->count(3) << std::endl;
@@ -189,7 +189,7 @@ DESCRIBE("Tiq::Tree::LayerTree", {
 			IT("should correctly assign layers", {
 				auto b = tree->begin();
 				while(!b->is_end()) {
-					EXPECT(b->data()).toBe(b->layer());
+					EXPECT(b->has_layer(b->data())).toBe(true);
 					b = tree->find_next(b);
 				}
 			});
@@ -238,23 +238,11 @@ DESCRIBE("Tiq::Tree::LayerTree", {
 			});
 
 			IT("should update node value", {
-				auto node = tree->update(tree->find(bs_find(20)), 30);
+				auto node = tree->insert(tree->find(bs_find(20)), 30, 2);
 
 				EXPECT(node->data()).toBe(30);
 				EXPECT(tree->find(bs_find(20))->is_end()).toBe(true);
 				EXPECT(tree->find(bs_find(30))->is_end()).toBe(false);
-			});
-
-			IT("should throw when inserting into non end node", {
-				EXPECT([tree](){
-					tree->insert(tree->find(bs_find(10)), 100, 0);
-				}).toThrowError();
-			});
-
-			IT("should throw when updating end node", {
-				EXPECT([tree](){
-					tree->update(tree->find(bs_find(100)), 100);
-				}).toThrowError();
 			});
 
 			IT("should throw when erasing end node", {
@@ -488,3 +476,4 @@ DESCRIBE("Tiq::Tree::LayerTree", {
 });
 
 SCENARIO_END
+

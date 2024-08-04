@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <utility>
 #include <functional>
+#include <vector>
 
 #include "tq_tree.h"
 #include "tq_count_tree.h"
@@ -37,7 +38,22 @@ namespace Tiq::Tree {
 			LayerStatNode<K>* bs_find(K key);
 	};
 
-	template<class T, class K, class L = LayersCollection<K>>
+	template<class K, class T>
+	class ValuesCollection : public Tree<Node<std::pair<K,T>>> {
+		public:
+			void set(K key, T value);
+			void unset(K key);
+			T& get(K key);
+			T& get();
+			bool has(K key);
+			bool contains(K key);
+			std::vector<K> keys();
+
+		private:
+			Node<std::pair<K,T>>* bs_find(K key);
+	};
+
+	template<class T, class K>
 	class LayerNode : public CountNode<T> {
 		template<class N, class A> friend class LayerTree;
 		public:
@@ -46,12 +62,14 @@ namespace Tiq::Tree {
 
 			using CountNode<T>::count;
 			size_t count(layer_key_t key) { return layers_.count(key); }
-			layer_key_t layer() { return layer_; }
-			bool is_layer(layer_key_t layer) { return layer_ <= layer; }
+			bool is_layer(layer_key_t layer) { return values_.has(layer); }
+			bool has_layer(layer_key_t layer) { return values_.contains(layer); }
+			T& data() { return values_.get();  }
+			T& data(layer_key_t key){ return values_.get(key); }
 
 		protected:
-			L layers_;
-			layer_key_t layer_;
+			ValuesCollection<K,T> values_;
+			LayersCollection<K> layers_;
 	};
 
 	template<class N, class A = std::allocator<N>>
@@ -64,8 +82,8 @@ namespace Tiq::Tree {
 
 		public:
 			const_node_ptr_t insert(const_node_ptr_t node, T data, layer_key_t layer);
-			const_node_ptr_t update(const_node_ptr_t node, T data);
 			const_node_ptr_t erase(const_node_ptr_t node);
+			const_node_ptr_t erase(const_node_ptr_t node, layer_key_t layer);
 			const_node_ptr_t find(comparator_fn_t comp) const;
 			const_node_ptr_t find(const_node_ptr_t node, comparator_fn_t comp) const;
 			const_node_ptr_t find_min(const_node_ptr_t node = nullptr) const;
