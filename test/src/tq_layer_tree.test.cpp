@@ -194,7 +194,7 @@ DESCRIBE("Tiq::Tree::LayerTree", {
 				}
 			});
 
-			IT("should count layers sizes correctly", {
+			IT("should count layer sizes correctly", {
 				auto root = tree->root();
 				for (int i=1;i<=10;i++) {
 					EXPECT(root->count(i)).toBe(i);
@@ -467,6 +467,7 @@ DESCRIBE("Tiq::Tree::LayerTree", {
 							EXPECT(tree->find_index(b, layer)).toBe(ind++);
 							b = tree->find_next(b, layer);
 						}
+						
 						EXPECT(ind).toBe(layers_size[l++]);
 					}
 				});
