@@ -58,6 +58,9 @@ namespace Tiq::Tree {
 			void unset(K key);
 			T& get(K key);
 			T& get();
+			K min();
+			bool is_min(K key);
+			bool has();
 			bool has(K key);
 			bool contains(K key);
 			std::vector<K> keys();
@@ -82,8 +85,11 @@ namespace Tiq::Tree {
 			T& data(layer_key_t key){ return values_.get(key); }
 			layer_key_t cut_key() { return cut_key_; }
 			bool is_cut() { return is_cut_; }
-			bool is_cut(layer_key_t layer) { return is_cut_ && cut_key_ < layer; }
+			bool is_cut(layer_key_t layer) { return is_cut_ && cut_key_ <= layer; }
 			bool is_cut_at(layer_key_t layer) { return is_cut_ && cut_key_ == layer; }
+			layer_key_t min_key() { return values_.min(); }
+			bool is_min(layer_key_t key) { return values_.is_min(key); };
+			bool empty() { return !values_.size(); }
 
 		protected:
 			bool is_cut_ = false;

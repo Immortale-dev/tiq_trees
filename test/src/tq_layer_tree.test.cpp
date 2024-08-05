@@ -6,6 +6,7 @@ namespace TEST_LAYER {
 	using Node = Tiq::Tree::LayerNode<int, int>;
 	using MyTree = Tiq::Tree::LayerTree<Node>;
 	using CollectionTree = Tiq::Tree::LayersCollection<int>;
+	using ValueTree = Tiq::Tree::ValuesCollection<int,int>;
 
 	std::vector<Node*> get_nodes(MyTree* tree) {
 		std::vector<Node*> res;
@@ -164,6 +165,138 @@ DESCRIBE("Tiq::Tree::LayersCollection", {
 				EXPECT(tree->size()).toBe(0);
 				EXPECT(tree->count(10)).toBe(0);
 				EXPECT(tree->get(7)).toBe(0);
+			});
+		});
+	});
+});
+
+DESCRIBE("Tiq::Tree::ValuesCollection", {
+	DESCRIBE("init tree", {
+		ValueTree* tree;
+		BEFORE_EACH({
+			tree = new ValueTree();
+		});
+		AFTER_EACH({
+			delete tree;
+		});
+
+		IT("should be empty", {
+			EXPECT(tree->size()).toBe(0);
+			EXPECT(tree->has()).toBe(false);
+		});
+
+		DESCRIBE("add 10 items", {
+			BEFORE_EACH({
+				for (int i=1;i<=5;i++) {
+					tree->set(i, i*2);
+				}
+				for (int i=11;i<=15;i++) {
+					tree->set(i, i*2);
+				}
+			});
+
+			IT("should contain 10 items", {
+				EXPECT(tree->size()).toBe(10);
+				for (int i=1;i<=5;i++) {
+					EXPECT(tree->contains(i)).toBe(true);
+				}
+				for (int i=11;i<=15;i++) {
+					EXPECT(tree->contains(i)).toBe(true);
+				}
+			});
+
+			IT("should not contain non existing keys", {
+				EXPECT(tree->contains(0)).toBe(false);
+				EXPECT(tree->contains(7)).toBe(false);
+				EXPECT(tree->contains(18)).toBe(false);
+			});
+
+			IT("should get currect data", {
+				for (int i=1;i<=5;i++) {
+					EXPECT(tree->has(i)).toBe(true);
+					EXPECT(tree->get(i)).toBe(i*2);
+				}
+				for (int i=11;i<=15;i++) {
+					EXPECT(tree->has(i)).toBe(true);
+					EXPECT(tree->get(i)).toBe(i*2);
+				}
+				for (int i=6;i<=10;i++) {
+					EXPECT(tree->has(i)).toBe(true);
+					EXPECT(tree->get(i)).toBe(10);
+				}
+				for (int i=16;i<=50;i++) {
+					EXPECT(tree->has(i)).toBe(true);
+					EXPECT(tree->get(i)).toBe(30);
+				}
+				for (int i=-10;i<=0;i++) {
+					EXPECT(tree->has(i)).toBe(false);
+				}
+				EXPECT([tree](){
+					tree->get(0);
+				}).toThrowError();
+				EXPECT(tree->has()).toBe(true);
+				EXPECT(tree->get()).toBe(30);
+			});
+
+			IT("should return correct keys", {
+				EXPECT(tree->keys()).toBeIterableEqual({1,2,3,4,5,11,12,13,14,15});
+			});
+
+			DESCRIBE("unset some of the keys", {
+				BEFORE_EACH({
+					tree->unset(15);
+					tree->unset(13);
+					tree->unset(17);
+				});
+
+				IT("should get correctly", {
+					EXPECT(tree->size()).toBe(8);
+					EXPECT(tree->get()).toBe(28);
+					EXPECT(tree->get(13)).toBe(24);
+				});
+
+				IT("should return correct keys", {
+					EXPECT(tree->keys()).toBeIterableEqual({1,2,3,4,5,11,12,14});
+				});
+			});
+
+			DESCRIBE("cut items", {
+				BEFORE_EACH({
+					tree->cut(4);
+				});
+
+				IT("should get correctly", {
+					for (int i=1;i<=3;i++) {
+						EXPECT(tree->get(i)).toBe(i*2);
+					}
+					EXPECT(tree->size()).toBe(3);
+					EXPECT(tree->get(4)).toBe(6);
+					EXPECT(tree->get()).toBe(6);
+					EXPECT(tree->has(0)).toBe(false);
+				});
+
+				IT("should return correct keys", {
+					EXPECT(tree->keys()).toBeIterableEqual({1,2,3});
+				});
+			});
+
+			DESCRIBE("clear the tree", {
+				BEFORE_EACH({
+					tree->clear();
+				});
+
+				IT("should not have any items", {
+					EXPECT(tree->size()).toBe(0);
+					EXPECT(tree->has()).toBe(false);
+					EXPECT(tree->has(1)).toBe(false);
+					EXPECT([tree](){
+						tree->get();
+					}).toThrowError();
+				});
+
+				IT("should return empty array", {
+					EXPECT(tree->keys().size()).toBe(0);
+				});
 			});
 		});
 	});
@@ -467,7 +600,6 @@ DESCRIBE("Tiq::Tree::LayerTree", {
 							EXPECT(tree->find_index(b, layer)).toBe(ind++);
 							b = tree->find_next(b, layer);
 						}
-						
 						EXPECT(ind).toBe(layers_size[l++]);
 					}
 				});
