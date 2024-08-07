@@ -43,17 +43,12 @@ namespace TEST_LAYER {
 	}
 
 	void print_tree(MyTree* tree) {
-		dfs(tree, tree->root(), [tree](Node* n, [[maybe_unused]]int a){
-			if (n->is_end()) return 0;
-			std::cout << n->data() << " - " << (tree->parent(n) ? tree->parent(n)->data() : 0) << std::endl;
-			std::cout << "\t" << n->count(1) << std::endl;
-			std::cout << "\t" << n->count(2) << std::endl;
-			std::cout << "\t" << n->count(3) << std::endl;
-			std::cout << "\t" << n->count(4) << std::endl;
-			std::cout << "\t" << n->count(12) << std::endl;
-			std::cout << "\t" << n->count(0) << std::endl;
-			return 0;
-		});
+		auto b = tree->begin();
+		while(!b->is_end()) {
+			std::cout << "=== (" << (b->empty() ? 0 : b->data(b->min_key())) << ")" << (tree->find_index(b)+1) << " <- " << (tree->parent(b) ? (tree->find_index(tree->parent(b))+1) : 0) << "===" << std::endl;
+			b->debug();
+			b = tree->find_next(b);
+		}
 	}
 }
 
@@ -602,6 +597,275 @@ DESCRIBE("Tiq::Tree::LayerTree", {
 						}
 						EXPECT(ind).toBe(layers_size[l++]);
 					}
+				});
+			});
+		});
+
+		DESCRIBE("Add 10 items to the end of the tree to layer 3", {
+			/*
+				3|31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+			*/
+			BEFORE_EACH({
+				for (int i=1;i<=10;i++) {
+					tree->insert(tree->end(), i+30, 3);
+				}
+			});
+
+			DESCRIBE("add 10 more items to layer 4 and intersect", {
+				/*
+					3|31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+					4|                    41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+				*/
+				BEFORE_EACH({
+					auto b = tree->find_nth(5);
+					for (int i=1;i<=10;i++) {
+						tree->insert(b, i+40, 4);
+						b = tree->find_next(b);
+					}
+				});
+
+				IT("should contain 15 items", {
+					EXPECT(tree->size()).toBe(15);
+				});
+
+				IT("should contain 10 layer 3", {
+					EXPECT(tree->size(3)).toBe(10);
+				});
+
+				IT("should contain 15 layer 4 items", {
+					EXPECT(tree->size(4)).toBe(15);
+				});
+
+				IT("should contain 0 items of layer 1", {
+					EXPECT(tree->size(1)).toBe(0);
+				});
+
+				IT("should get correct nth item", {
+					std::vector<int> items;
+					for (int i=0;i<15;i++) {
+						items.push_back(tree->find_nth(i)->data());
+					}
+
+					EXPECT(items).toBeIterableEqual({31,32,33,34,35,41,42,43,44,45,46,47,48,49,50});
+				});
+
+				DESCRIBE("add 10 more items to layer 2 and intersect", {
+					/*
+						2|            21, 22, 23, 24, 25,     26, 27, 28, 29, 30,
+						3|31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+						4|                    41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+					*/
+					BEFORE_EACH({
+						auto b = tree->find_nth(3);
+						for (int i=1;i<=5;i++) {
+							tree->insert(b, i + 20, 2);
+							b = tree->find_next(b);
+						}
+						b = tree->find_nth(9);
+						for (int i=6;i<=10;i++) {
+							tree->insert(b, i + 20, 2);
+							b = tree->find_next(b);
+						}
+					});
+
+					IT("should contain 15 items", {
+						EXPECT(tree->size()).toBe(15);
+					});
+
+					IT("should contain 10 layer 2 items", {
+						EXPECT(tree->size(2)).toBe(10);
+					});
+
+					IT("should contain 13 layer 3 items", {
+						EXPECT(tree->size(3)).toBe(14);
+					});
+
+					IT("should contain 15 layer 10 items", {
+						EXPECT(tree->size(10)).toBe(15);
+					});
+
+					IT("should get correct nth items", {
+						std::vector<int> layers{1,2,3,4,5};
+						std::vector<std::vector<int>> results{
+							{},
+							{21,22,23,24,25,26,27,28,29,30},
+							{31,32,33,34,35,36,37,38,39,40,27,28,29,30},
+							{31,32,33,34,35,41,42,43,44,45,46,47,48,49,50},
+							{31,32,33,34,35,41,42,43,44,45,46,47,48,49,50},
+						};
+
+						int l=0;
+						for(auto layer : layers) {
+							auto &result = results[l++];
+							for(size_t i=0;i<result.size();i++) {
+								EXPECT(tree->find_nth(i,layer)->data(layer)).toBe(result[i]);
+								EXPECT(tree->find_index(tree->find_nth(i,layer), layer)).toBe(i);
+							}
+							EXPECT(tree->find_nth(result.size(), layer)->is_end()).toBe(true);
+						}
+					});
+
+					DESCRIBE("erase some items", {
+						/*
+							2|            21, 22, 23, ##, ##,     ##, 27, ##, ##, 30,
+							3|31, 32, ##, ##, ##, ##, ##, 38, 39, 40,
+							4|                    41, ##, ##, ##, ##, ##, ##, 48, 49, 50,
+						*/
+						BEFORE_EACH({
+							std::vector<std::pair<Node*, int>> remove;
+							auto b = tree->find_nth(2, 3);
+							for (int i=0;i<5;i++) {
+								remove.push_back({b, 3});
+								b = tree->find_next(b, 3);
+							}
+
+							b = tree->find_nth(3, 2);
+							for (int i=0;i<3;i++) {
+								remove.push_back({b, 2});
+								b = tree->find_next(b, 2);
+							}
+							b = tree->find_next(b,2);
+							for (int i=0;i<2;i++) {
+								remove.push_back({b, 2});
+								b = tree->find_next(b, 2);
+							}
+
+							b = tree->find_nth(6, 4);
+							for (int i=0;i<6;i++) {
+								remove.push_back({b, 4});
+								b = tree->find_next(b, 4);
+							}
+
+							for (auto n : remove) {
+								tree->erase(n.first, n.second);
+							}
+						});
+
+						IT("should contain correct amount of items", {
+							EXPECT(tree->size()).toBe(15);
+							EXPECT(tree->size(1)).toBe(0);
+							EXPECT(tree->size(2)).toBe(5);
+							EXPECT(tree->size(3)).toBe(5);
+							EXPECT(tree->size(4)).toBe(4);
+							EXPECT(tree->size(5)).toBe(4);
+						});
+
+						IT("should find correct nth item", {
+							std::vector<int> layers{1,2,3,4,5};
+							std::vector<std::vector<int>> results{
+								{},
+								{21,22,23,27,30},
+								{31,32,39,27,30},
+								{31,32,49,50},
+								{31,32,49,50},
+							};
+
+							int l=0;
+							for(auto layer : layers) {
+								auto &result = results[l++];
+								for(size_t i=0;i<result.size();i++) {
+									EXPECT(tree->find_nth(i,layer)->data(layer)).toBe(result[i]);
+									EXPECT(tree->find_index(tree->find_nth(i,layer), layer)).toBe(i);
+								}
+								EXPECT(tree->find_nth(result.size(), layer)->is_end()).toBe(true);
+							}
+						});
+
+						DESCRIBE("add and remove some items", {
+							/*
+								1|            11, 12, 13, 14, 15,
+								2|                                22, 23, ##,             ##,     ##, 27,         ##, ##, 30,
+								3|31, 32, ##,                                             38, 39, 40,
+								4|                                    41, ##,             ##, 41, 42, 43, 44, 50, ##, 48, 49, 50,
+								5|                                            51, 52, 60,
+							*/
+							BEFORE_EACH({
+								auto b = tree->find_nth(8);
+								for(int i=1;i<=3;i++) {
+									tree->insert(b, i+40, 4);
+									if (i < 3) {
+										b = tree->find_next(b);
+									}
+								}
+								b = tree->after(b);
+								for(int i=4;i<=10;i++) {
+									b = tree->insert(b, i+40, 4);
+									b = tree->after(b);
+								}
+
+								b = tree->after(tree->find_nth(6));
+								for (int i=1;i<=10;i++) {
+									b = tree->insert(b, i+50, 5);
+									b = tree->after(b);
+								}
+
+								b = tree->after(tree->find_nth(2));
+								for (int i=1;i<=5;i++) {
+									b = tree->insert(b, i+10, 1);
+									b = tree->after(b);
+								}
+
+								std::vector<std::pair<Node*, int>> remove;
+								remove.push_back({tree->find_nth(8), 0});
+
+								b = tree->find_nth(14);
+								for (int i=0;i<7;i++) {
+									remove.push_back({b, 5});
+									b = tree->find_next(b);
+								}
+
+								b = tree->find_nth(9);
+								for (int i=0;i<3;i++) {
+									remove.push_back({b, 3});
+									b = tree->find_next(b);
+								}
+
+								b = tree->find_nth(27);
+								for (int i=0;i<5;i++) {
+									remove.push_back({b, 0});
+									b = tree->find_next(b);
+								}
+
+								for (auto n : remove) {
+									if (n.second) {
+										tree->erase(n.first, n.second, true);
+									} else {
+										tree->erase(n.first);
+									}
+								}
+							});
+
+							IT("should contain correct layer sizes", {
+								EXPECT(tree->size()).toBe(24);
+								EXPECT(tree->size(1)).toBe(5);
+								EXPECT(tree->size(2)).toBe(9);
+								EXPECT(tree->size(3)).toBe(12);
+								EXPECT(tree->size(4)).toBe(15);
+								EXPECT(tree->size(5)).toBe(18);
+							});
+
+							IT("should find correct nth item", {
+								std::vector<int> layers{1,2,3,4,5};
+								std::vector<std::vector<int>> results{
+									{11,12,13,14,15},
+									{11,12,13,14,15,22,23,27,30},
+									{31,32,11,12,13,14,15,22,23,39,27,30},
+									{31,32,11,12,13,14,15,22,41,41,43,44,50,49,50},
+									{31,32,11,12,13,14,15,22,41,51,52,60,41,43,44,50,49,50},
+								};
+
+								int l=0;
+								for(auto layer : layers) {
+									auto &result = results[l++];
+									for(size_t i=0;i<result.size();i++) {
+										EXPECT(tree->find_nth(i,layer)->data(layer)).toBe(result[i]);
+										EXPECT(tree->find_index(tree->find_nth(i,layer), layer)).toBe(i);
+									}
+									EXPECT(tree->find_nth(result.size(), layer)->is_end()).toBe(true);
+								}
+							});
+						});
+					});
 				});
 			});
 		});

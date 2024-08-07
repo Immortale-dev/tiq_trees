@@ -267,24 +267,29 @@ Tiq::Tree::ValueStatNode<K,T>* Tiq::Tree::ValuesCollection<K,T>::bs_find(K key)
 template<class N, class A>
 typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::insert(const_node_ptr_t node, T data, layer_key_t layer)
 {
-	if (!node->is_end()){
-		if (node->is_cut_at(layer)) {
-			node->is_cut_ = false;
-		}
-		if (node->is_cut(layer)) return nullptr;
+	bool update_min = false;
+	bool update_cut = false;
+	layer_key_t min_key;
+	if (!node->is_cut(layer) && !node->is_layer(layer) && !node->empty()) {
+		update_min = true;
+		min_key = node->min_key();
 	}
-	layer_key_t min;
-	bool change_min = false;
-	if (!node->empty() && !node->is_layer(layer)) {
-		min = node->min_key();
-		change_min = true;
+	if (node->is_cut_at(layer)) {
+		update_cut = true;
 	}
-	node->values_.set(layer, data);
+
+	node->inserts_.set(layer, data);
+	node->erases_.unset(layer);
 	auto n = this->insert_(node);
-	if (change_min) {
-		upward_layer_count_update(n, min);
+
+	if (update_min) {
+		upward_layer_count_update(n, min_key);
+	}
+	if (update_cut && node->is_cut()) {
+		upward_layer_count_update(n, node->cut_key());
 	}
 	upward_layer_count_update(n, layer);
+
 	return this->to_public_node(n);
 }
 
@@ -295,29 +300,52 @@ typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::
 		throw std::logic_error("Cannot erase end node");
 	}
 
+	bool update_min = false;
+	bool update_cut = false;
+	layer_key_t cut_key;
 	if (remove) {
-		bool is_min = node->is_min(layer);
-		node->values_.unset(layer);
-		if (node->is_cut_at(layer)) {
-			node->is_cut_ = false;
+		if (node->is_min(layer) && !node->empty()) {
+			update_min = true;
 		}
-		upward_layer_count_update(node, layer);
-		if (is_min && !node->empty()) {
+		if (node->empty() && node->is_cut_at(layer)) {
+			update_min = true;
+		}
+		if (node->is_cut_at(layer)) {
+			update_cut = true;
+		}
+
+		node->inserts_.unset(layer);
+		node->erases_.unset(layer);
+
+		if (update_min && !node->empty()) {
 			upward_layer_count_update(node, node->min_key());
 		}
+		if (update_cut && node->is_cut()) {
+			upward_layer_count_update(node, node->cut_key());
+		}
+		upward_layer_count_update(node, layer);
 	} else {
-		std::vector<layer_key_t> removed = node->values_.cut(layer);
-		for (auto &k : removed) {
-			upward_layer_count_update(node, k);
+		if (!node->is_cut(layer) && node->is_cut()) {
+			update_cut = true;
+			cut_key = node->cut_key();
 		}
-		if (!node->empty()) {
-			node->is_cut_ = true;
-			node->kut_key_ = layer;
-			upward_layer_count_update(node, layer);
+		if (!node->empty() && (!node->is_layer(layer) || node->is_min(layer))) {
+			update_min = true;
 		}
+
+		node->inserts_.unset(layer);
+		node->erases_.set(layer, true);
+
+		if (update_min && node->inserts_.size()) {
+			upward_layer_count_update(node, node->min_key());
+		}
+		if (update_cut) {
+			upward_layer_count_update(node, cut_key);
+		}
+		upward_layer_count_update(node, layer);
 	}
 
-	if (!node->empty()) {
+	if (node->inserts_.size() || node->erases_.size()) {
 		return node;
 	}
 	auto n = this->erase_(node);
@@ -330,11 +358,29 @@ typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::
 	if (node->is_end()) {
 		throw std::logic_error("Cannot erase end node");
 	}
-	std::vector<layer_key_t> keys = node->values_.keys();
-	node->values_.clear();
-	for(auto& k : keys) {
-		upward_layer_count_update(node, k);
+
+	bool update_min = false;
+	bool update_cut = false;
+	layer_key_t min_key, cut_key;
+
+	if (!node->empty()) {
+		update_min = true;
+		min_key = node->min_key();
 	}
+	if (node->is_cut()) {
+		update_cut = true;
+		cut_key = node->cut_key();
+	}
+
+	node->inserts_.clear();
+	node->erases_.clear();
+	if (update_min) {
+		upward_layer_count_update(node, min_key);
+	}
+	if (update_cut) {
+		upward_layer_count_update(node, cut_key);
+	}
+
 	auto n = this->erase_(node);
 	return this->to_public_node(n);
 }
@@ -479,13 +525,27 @@ void Tiq::Tree::LayerTree<N,A>::right_rotate(node_ptr_t x)
 template<class N, class A>
 void Tiq::Tree::LayerTree<N,A>::transplant(node_ptr_t u, node_ptr_t v)
 {
+	std::vector<layer_key_t> crit_u_keys = this->to_public_node(u)->crit_keys();
+	std::vector<layer_key_t> crit_v_keys = this->to_public_node(v)->crit_keys();
+
+	std::vector<layer_key_t> merged = crit_u_keys;
+	size_t length = merged.size();
+	for (auto &k : crit_v_keys) {
+		size_t i;
+		for (i=0;i<length;i++) {
+			if (merged[i] == k) break;
+		}
+		if (i == length) {
+			merged.push_back(k);
+		}
+	}
+
 	CountTree<N,A>::transplant(u, v);
-	std::vector<layer_key_t> keys = this->to_public_node(u)->values_.keys();
 
 	if (!v->is_end()) {
 		wide_count_update(v);
 	}
-	for (auto& k : keys) {
+	for (auto &k : merged) {
 		upward_layer_count_update(v, k);
 	}
 }
@@ -507,10 +567,10 @@ void Tiq::Tree::LayerTree<N,A>::layer_count_update(node_ptr_t node, layer_key_t 
 	auto right = this->to_public_node(this->right_(node));
 
 	auto value = left->layers_.get(layer) + right->layers_.get(layer);
-	if (n->is_min(layer)) {
+	if (!n->empty() && n->is_min(layer)) {
 		++value;
 	}
-	if (n->is_cut_at(layer)) {
+	if (!n->empty() && n->is_cut_at(layer)) {
 		--value;
 	}
 	n->layers_.set(layer, value);
@@ -531,7 +591,7 @@ void Tiq::Tree::LayerTree<N,A>::wide_count_update(node_ptr_t node)
 	if (!n->empty()) {
 		layers.add(n->min_key(), 1);
 	}
-	if (n->is_cut()) {
+	if (!n->empty() && n->is_cut()) {
 		layers.add(n->cut_key(), -1);
 	}
 }
@@ -616,4 +676,16 @@ template<class N, class A>
 size_t Tiq::Tree::LayerTree<N,A>::find_index(const_node_ptr_t node, layer_key_t layer) const
 {
 	return find_index(node, this->root(), layer);
+}
+
+template<class N, class A>
+size_t Tiq::Tree::LayerTree<N,A>::size() const
+{
+	return CountTree<N,A>::size();
+}
+
+template<class N, class A>
+size_t Tiq::Tree::LayerTree<N,A>::size(layer_key_t layer) const
+{
+	return this->root()->count(layer);
 }

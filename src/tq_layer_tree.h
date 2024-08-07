@@ -6,6 +6,7 @@
 #include <utility>
 #include <functional>
 #include <vector>
+#include <algorithm>
 
 #include "tq_tree.h"
 #include "tq_count_tree.h"
@@ -79,22 +80,53 @@ namespace Tiq::Tree {
 
 			using CountNode<T>::count;
 			size_t count(layer_key_t key) { return layers_.count(key); }
-			bool is_layer(layer_key_t layer) { return values_.has(layer) && !is_cut(layer); }
-			bool has_layer(layer_key_t layer) { return values_.contains(layer) || is_cut_at(layer); }
-			T& data() { return values_.get();  }
-			T& data(layer_key_t key){ return values_.get(key); }
-			layer_key_t cut_key() { return cut_key_; }
-			bool is_cut() { return is_cut_; }
-			bool is_cut(layer_key_t layer) { return is_cut_ && cut_key_ <= layer; }
-			bool is_cut_at(layer_key_t layer) { return is_cut_ && cut_key_ == layer; }
-			layer_key_t min_key() { return values_.min(); }
-			bool is_min(layer_key_t key) { return values_.is_min(key); };
-			bool empty() { return !values_.size(); }
+			bool is_layer(layer_key_t layer) { return inserts_.has(layer) && !erases_.has(layer); }
+			bool has_layer(layer_key_t layer) { return inserts_.contains(layer) || erases_.contains(layer); }
+			T& data() { return is_cut() ? inserts_.get(cut_key()) : inserts_.get();  }
+			T& data(layer_key_t key){ if(is_cut(key)){ throw std::logic_error("No data found"); }  return inserts_.get(key); }
+			layer_key_t cut_key() { return erases_.min(); }
+			bool is_cut() { return !!erases_.size(); }
+			bool is_cut(layer_key_t layer) { return erases_.has(layer); }
+			bool is_cut_at(layer_key_t layer) { return is_cut() && cut_key() == layer; }
+			layer_key_t min_key() { return inserts_.min(); }
+			bool is_min(layer_key_t key) { return inserts_.is_min(key); };
+			bool empty() { return !inserts_.size() || (erases_.size() && erases_.min() < inserts_.min()); }
+			void debug() {
+				std::cout << "I: ";
+				auto b = inserts_.begin();
+				while(!b->is_end()) {
+					std::cout << b->key() << " ";
+					b = inserts_.find_next(b);
+				}
+				std::cout << std::endl << "D: ";
+				auto d = erases_.begin();
+				while(!d->is_end()) {
+					std::cout << d->key() << " ";
+					d = erases_.find_next(d);
+				}
+				std::cout << std::endl << "L: ";
+				auto l = layers_.begin();
+				while(!l->is_end()) {
+					std::cout << l->data() << "=" << layers_.get(l->data()) << " ";
+					l = layers_.find_next(l);
+				}
+				std::cout << std::endl;
+			}
 
 		protected:
-			bool is_cut_ = false;
-			layer_key_t cut_key_;
-			ValuesCollection<K,T> values_;
+			std::vector<layer_key_t> crit_keys() {
+				std::vector<layer_key_t> ret;
+				if (!empty()) {
+					ret.push_back(min_key());
+				}
+				if (is_cut()) {
+					ret.push_back(cut_key());
+				}
+				return ret;
+			}
+
+			ValuesCollection<K,T> inserts_;
+			ValuesCollection<K,T> erases_;
 			LayersCollection<K> layers_;
 	};
 
@@ -129,6 +161,8 @@ namespace Tiq::Tree {
 			size_t find_index(const_node_ptr_t node, const_node_ptr_t parent = nullptr) const;
 			size_t find_index(const_node_ptr_t node, const_node_ptr_t parent, layer_key_t layer) const;
 			size_t find_index(const_node_ptr_t node, layer_key_t layer) const;
+			size_t size() const;
+			size_t size(layer_key_t layer) const;
 
 		protected:
 			void left_rotate(node_ptr_t x) override;
