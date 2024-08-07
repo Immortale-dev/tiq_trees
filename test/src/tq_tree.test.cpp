@@ -208,6 +208,38 @@ DESCRIBE("Tiq::Tree::Tree", {
 				EXPECT(prev->data()).toBe(10);
 			});
 
+			IT("should correctly find before node", {
+				auto n1 = tree->before();
+				auto n2 = tree->before(tree->root());
+				auto n3 = tree->before(tree->find_min());
+				auto n4 = tree->before(tree->right(tree->find_min()));
+
+				EXPECT(n1->is_end()).toBe(true);
+				EXPECT(n1).toBe(tree->left(tree->begin()));
+				EXPECT(n2->is_end()).toBe(true);
+				EXPECT(n2).toBe(tree->right(tree->find_max(tree->left(tree->root()))));
+				EXPECT(n3->is_end()).toBe(true);
+				EXPECT(n3).toBe(n1);
+				EXPECT(n4->is_end()).toBe(true);
+				EXPECT(n4).toBe(tree->right(tree->find_min()));
+			});
+
+			IT("should correctly find after node", {
+				auto n1 = tree->after();
+				auto n2 = tree->after(tree->root());
+				auto n3 = tree->after(tree->find_max());
+				auto n4 = tree->after(tree->left(tree->find_max()));
+
+				EXPECT(n1->is_end()).toBe(true);
+				EXPECT(n1).toBe(tree->end());
+				EXPECT(n2->is_end()).toBe(true);
+				EXPECT(n2).toBe(tree->left(tree->find_min(tree->right(tree->root()))));
+				EXPECT(n3->is_end()).toBe(true);
+				EXPECT(n3).toBe(n1);
+				EXPECT(n4->is_end()).toBe(true);
+				EXPECT(n4).toBe(tree->left(tree->find_max()));
+			});
+
 			IT("should correctly find next nodes", {
 				auto n1 = tree->find_next(tree->find(bs_find(5)));
 				auto n2 = tree->find_next(tree->right(tree->find(bs_find(5))));

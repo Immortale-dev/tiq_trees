@@ -58,6 +58,8 @@ namespace Tiq::Tree {
 			const_node_ptr_t parent(const_node_ptr_t node) const;
 			const_node_ptr_t left(const_node_ptr_t node) const;
 			const_node_ptr_t right(const_node_ptr_t node) const;
+			const_node_ptr_t before(const_node_ptr_t node = nullptr) const;
+			const_node_ptr_t after(const_node_ptr_t node = nullptr) const;
 			const_node_ptr_t insert(const_node_ptr_t node, T data);
 			const_node_ptr_t erase(const_node_ptr_t node);
 			void clear();
@@ -74,9 +76,9 @@ namespace Tiq::Tree {
 			virtual void right_rotate(node_ptr_t x);
 			virtual void transplant(node_ptr_t u, node_ptr_t v);
 
-			node_ptr_t left_(node_ptr_t);
-			node_ptr_t right_(node_ptr_t);
-			node_ptr_t parent_(node_ptr_t);
+			node_ptr_t left_(node_ptr_t) const;
+			node_ptr_t right_(node_ptr_t) const;
+			node_ptr_t parent_(node_ptr_t) const;
 
 			const_node_ptr_t to_public_node(node_ptr_t node) const;
 			node_ptr_t to_internal_node(const_node_ptr_t node) const;

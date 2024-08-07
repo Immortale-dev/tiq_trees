@@ -164,6 +164,38 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::right(cons
 }
 
 template<class N, class A>
+typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::before(const_node_ptr_t cnode) const
+{
+	if (!cnode) {
+		return to_public_node(begin_);
+	}
+	if (cnode->is_end()) {
+		return cnode;
+	}
+	node_ptr_t node = find_max_(left_(to_internal_node(cnode)));
+	if (!node->is_end()) {
+		node = right_(node);
+	}
+	return to_public_node(node);
+}
+
+template<class N, class A>
+typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::after(const_node_ptr_t cnode) const
+{
+	if (!cnode) {
+		return end();
+	}
+	if (cnode->is_end()) {
+		return cnode;
+	}
+	node_ptr_t node = find_min_(right_(to_internal_node(cnode)));
+	if (!node->is_end()) {
+		node = left_(node);
+	}
+	return to_public_node(node);
+}
+
+template<class N, class A>
 typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::insert(const_node_ptr_t cnode, T data)
 {
 	cnode->data() = data;
@@ -261,12 +293,12 @@ typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::erase_(node_ptr_
 			y->right_->parent_ = y;
 		}
 
-		transplant(z, y);
 		// Delete end node.
 		delete_node(y->left_);
 		y->left_ = z->left_;
 		y->left_->parent_ = y;
 		y->color_ = z->color_;
+		transplant(z, y);
 	}
 	if (y_original_color == 0){
 		fix_delete(x);
@@ -421,19 +453,19 @@ void Tiq::Tree::Tree<N,A>::transplant(node_ptr_t u, node_ptr_t v)
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::left_(node_ptr_t x)
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::left_(node_ptr_t x) const
 {
 	return x->left_;
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::right_(node_ptr_t x)
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::right_(node_ptr_t x) const
 {
 	return x->right_;
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::parent_(node_ptr_t x)
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::parent_(node_ptr_t x) const
 {
 	return x->parent_;
 }
