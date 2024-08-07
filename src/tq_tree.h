@@ -44,6 +44,8 @@ namespace Tiq::Tree {
 
 			Tree();
 			virtual ~Tree();
+			Tree(const Tree&) = delete;
+			Tree& operator=(const Tree&) = delete;
 
 			const_node_ptr_t root() const;
 			const_node_ptr_t begin() const;
