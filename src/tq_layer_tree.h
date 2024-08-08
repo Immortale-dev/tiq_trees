@@ -12,63 +12,86 @@
 #include "tq_count_tree.h"
 
 namespace Tiq::Tree {
-	template<class T>
-	class LayerStatNode : public CountNode<T> {
-		using value_t = intmax_t;
-		template<class K, class A> friend class LayersCollection;
+	using collection_value_t = intmax_t;
 
-		private:
-			value_t value_ = 0;
+	template<class K>
+	class KeyedNode {
+		public:
+			using key_t = K;
+
+			key_t key(){ return key_; }
+
+		protected:
+			key_t key_;
 	};
 
-	template <class K, class A = std::allocator<LayerStatNode<K>>>
-	class LayersCollection : public CountTree<LayerStatNode<K>, A> {
+	template<class T, class N>
+	class BSTree {
+		using const_node_ptr_t = N*;
+		using key_t = typename N::key_t;
+
+		protected:
+			const_node_ptr_t bs_find(key_t key) const;
+			const_node_ptr_t bs_find_floor(key_t) const;
+			virtual T* get_tree() const = 0;
+	};
+
+	template<class K, class T>
+	class LayersCollectionNode : public CountNode<T>, public KeyedNode<K> {
+		using value_t = T;
+		template<class K_, class T_, class A_> friend class LayersCollection;
+	};
+
+	template <class K, class T = collection_value_t, class A = std::allocator<LayersCollectionNode<K,T>>>
+	class LayersCollection : public CountTree<LayersCollectionNode<K,T>,A>, public BSTree<LayersCollection<K,T,A>, LayersCollectionNode<K,T>> {
 		public:
-			using value_t = intmax_t;
+			using public_node_t = LayersCollectionNode<K,T>;
 			using node_ptr_t = InternalNode*;
+			using const_node_ptr_t = public_node_t*;
+			using value_t = typename public_node_t::value_t;
 			using key_t = K;
 
 			void set(key_t key, value_t value);
 			void unset(key_t key);
 			void add(key_t key, value_t value);
-			void merge(const LayersCollection<K,A>& collection);
+			void merge(const LayersCollection<K,T,A>& collection);
 			value_t get(key_t key);
 			value_t count(key_t key);
 
 		protected:
 			void calc_count(node_ptr_t x) override;
-
-		private:
-			LayerStatNode<K>* bs_find(K key);
+			LayersCollection<K,T,A>* get_tree() const override;
 	};
 
 	template<class K, class T>
-	class ValueStatNode : public Node<T> {
-		template<class KK, class TT> friend class ValuesCollection;
-		public:
-			K key() { return key_; }
-
-		private:
-			K key_;
+	class ValuesCollectionNode : public Node<T>, public KeyedNode<K> {
+		using value_t = T;
+		template<class K_, class T_, class A_> friend class ValuesCollection;
 	};
 
-	template<class K, class T>
-	class ValuesCollection : public Tree<ValueStatNode<K,T>> {
+	template<class K, class T, class A = std::allocator<ValuesCollectionNode<K,T>>>
+	class ValuesCollection : public Tree<ValuesCollectionNode<K,T>,A>, public BSTree<ValuesCollection<K,T,A>, ValuesCollectionNode<K,T>> {
 		public:
-			void set(K key, T value);
-			void unset(K key);
-			T& get(K key);
-			T& get();
-			K min();
-			bool is_min(K key);
+			using public_node_t = ValuesCollectionNode<K,T>;
+			using node_ptr_t = InternalNode*;
+			using const_node_ptr_t = public_node_t*;
+			using value_t = typename public_node_t::value_t;
+			using key_t = K;
+
+			void set(key_t key, value_t value);
+			void unset(key_t key);
+			value_t& get(key_t key);
+			value_t& get();
+			key_t min();
+			bool is_min(key_t key);
 			bool has();
-			bool has(K key);
-			bool contains(K key);
-			std::vector<K> keys();
-			std::vector<K> cut(K key);
+			bool has(key_t key);
+			bool contains(key_t key);
+			std::vector<key_t> keys();
+			std::vector<key_t> cut(key_t key);
 
-		private:
-			ValueStatNode<K,T>* bs_find(K key);
+		protected:
+			ValuesCollection<K,T,A>* get_tree() const override;
 	};
 
 	template<class T, class K>

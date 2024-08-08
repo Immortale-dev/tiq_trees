@@ -1,56 +1,75 @@
-// LayersCollection
+// BSTree
 
-template<class K, class A>
-void Tiq::Tree::LayersCollection<K,A>::set(K key, value_t value)
+template<class T, class N>
+typename Tiq::Tree::BSTree<T,N>::const_node_ptr_t Tiq::Tree::BSTree<T,N>::bs_find(key_t key) const
 {
-	auto node = bs_find(key);
-	if (!node->is_end()) {
-		node->value_ = value;
-		this->insert(node, key);
-		return;
+	auto tree = get_tree();
+	auto node = tree->root();
+	while(!node->is_end()) {
+		if (key == node->key()) {
+			// Item found.
+			break;
+		}
+		if (key > node->key()) {
+			node = tree->right(node);
+		} else {
+			node = tree->left(node);
+		}
 	}
-	// Actual insert.
-	node->value_ = value;
-	this->insert(node, key);
+	return node;
 }
 
-template<class K, class A>
-void Tiq::Tree::LayersCollection<K,A>::unset(K key)
+template<class T, class N>
+typename Tiq::Tree::BSTree<T,N>::const_node_ptr_t Tiq::Tree::BSTree<T,N>::bs_find_floor(key_t key) const
 {
+	auto tree = get_tree();
 	auto node = bs_find(key);
+	if (node->is_end()) {
+		node = tree->find_prev(node);
+	}
+	return node;
+}
+
+// LayersCollection
+
+template<class K, class T, class A>
+void Tiq::Tree::LayersCollection<K,T,A>::set(K key, value_t value)
+{
+	auto node = this->bs_find(key);
+	node->key_ = key;
+	this->insert(node, value);
+}
+
+template<class K, class T, class A>
+void Tiq::Tree::LayersCollection<K,T,A>::unset(K key)
+{
+	auto node = this->bs_find(key);
 	if (!node->is_end()) {
 		this->erase(node);
 	}
 }
 
-template<class K, class A>
-typename Tiq::Tree::LayersCollection<K,A>::value_t Tiq::Tree::LayersCollection<K,A>::get(K key)
+template<class K, class T, class A>
+typename Tiq::Tree::LayersCollection<K,T,A>::value_t Tiq::Tree::LayersCollection<K,T,A>::get(K key)
 {
-	auto node = bs_find(key);
+	auto node = this->bs_find(key);
 
 	if (node->is_end()) return 0;
-	return node->value_;
+	return node->data();
 }
 
-template<class K, class A>
-typename Tiq::Tree::LayersCollection<K,A>::value_t Tiq::Tree::LayersCollection<K,A>::count(K key)
+template<class K, class T, class A>
+typename Tiq::Tree::LayersCollection<K,T,A>::value_t Tiq::Tree::LayersCollection<K,T,A>::count(K key)
 {
-	auto node = bs_find(key);
-
-	// Get upper bound.
-	node = this->find_next(node);
-
-	// Move one back.
-	node = this->find_prev(node);
+	auto node = this->bs_find_floor(key);
 
 	if (!node || node->is_end()) return 0;
 
-	value_t value = this->left(node)->count() + node->value_;
-
+	value_t value = this->left(node)->count() + node->data();
 	while(node) {
 		auto par = this->parent(node);
 		if (par && this->right(par) == node) {
-			value += this->left(par)->count() + par->value_;
+			value += this->left(par)->count() + par->data();
 		}
 		node = par;
 	}
@@ -58,52 +77,33 @@ typename Tiq::Tree::LayersCollection<K,A>::value_t Tiq::Tree::LayersCollection<K
 	return value;
 }
 
-template<class K, class A>
-void Tiq::Tree::LayersCollection<K,A>::add(key_t key, value_t value)
+template<class K, class T, class A>
+void Tiq::Tree::LayersCollection<K,T,A>::add(key_t key, value_t value)
 {
-	auto node = bs_find(key);
+	auto node = this->bs_find(key);
 	if (!node->is_end()) {
-		node->value_ = node->value_ + value;
-		this->insert(node, key);
+		this->insert(node, node->data() + value);
 		return;
 	}
 	// Insert if doesn't exist.
-	node->value_ = value;
-	this->insert(node, key);
+	node->key_ = key;
+	this->insert(node, value);
 }
 
-template<class K, class A>
-void Tiq::Tree::LayersCollection<K,A>::merge(const LayersCollection<K,A>& collection)
+template<class K, class T, class A>
+void Tiq::Tree::LayersCollection<K,T,A>::merge(const LayersCollection<K,T,A>& collection)
 {
 	auto min = collection.find_min();
 	while (!min->is_end()) {
-		this->add(min->data(), min->value_);
+		this->add(min->key(), min->data());
 		min = collection.find_next(min);
 	}
 }
 
-template<class K, class A>
-Tiq::Tree::LayerStatNode<K>* Tiq::Tree::LayersCollection<K,A>::bs_find(K key)
+template<class K, class T, class A>
+void Tiq::Tree::LayersCollection<K,T,A>::calc_count(node_ptr_t x)
 {
-	auto node = this->root();
-	while(!node->is_end()) {
-		if (key == node->data()) {
-			// Item found.
-			break;
-		}
-		if (key > node->data()) {
-			node = this->right(node);
-		} else {
-			node = this->left(node);
-		}
-	}
-	return node;
-}
-
-template<class K, class A>
-void Tiq::Tree::LayersCollection<K,A>::calc_count(node_ptr_t x)
-{
-	CountTree<LayerStatNode<K>,A>::calc_count(x);
+	CountTree<LayersCollectionNode<K,T>,A>::calc_count(x);
 
 	if (x->is_end()) return;
 
@@ -112,38 +112,38 @@ void Tiq::Tree::LayersCollection<K,A>::calc_count(node_ptr_t x)
 	auto left = this->left(node);
 	auto right = this->right(node);
 
-	node->count_ = left->count() + right->count() + node->value_;
+	node->count_ = left->count() + right->count() + node->data();
+}
+
+template<class K, class T, class A>
+Tiq::Tree::LayersCollection<K,T,A>* Tiq::Tree::LayersCollection<K,T,A>::get_tree() const
+{
+	return const_cast<LayersCollection<K,T,A>*>(this);
 }
 
 // ValuesCollection
 
-template<class K, class T>
-void Tiq::Tree::ValuesCollection<K,T>::set(K key, T value)
+template<class K, class T, class A>
+void Tiq::Tree::ValuesCollection<K,T,A>::set(key_t key, value_t value)
 {
-	auto node = bs_find(key);
+	auto node = this->bs_find(key);
 	node->key_ = key;
 	this->insert(node, value);
 }
 
-template<class K, class T>
-void Tiq::Tree::ValuesCollection<K,T>::unset(K key)
+template<class K, class T, class A>
+void Tiq::Tree::ValuesCollection<K,T,A>::unset(key_t key)
 {
-	auto node = bs_find(key);
+	auto node = this->bs_find(key);
 	if (!node->is_end()) {
 		this->erase(node);
 	}
 }
 
-template<class K, class T>
-T& Tiq::Tree::ValuesCollection<K,T>::get(K key)
+template<class K, class T, class A>
+typename Tiq::Tree::ValuesCollection<K,T,A>::value_t& Tiq::Tree::ValuesCollection<K,T,A>::get(K key)
 {
-	auto node = bs_find(key);
-
-	// Get upper bound.
-	node = this->find_next(node);
-
-	// Move one back.
-	node = this->find_prev(node);
+	auto node = this->bs_find_floor(key);
 
 	if (!node || node->is_end()) {
 		throw std::logic_error("No data found");
@@ -152,8 +152,8 @@ T& Tiq::Tree::ValuesCollection<K,T>::get(K key)
 	return node->data();
 }
 
-template<class K, class T>
-T& Tiq::Tree::ValuesCollection<K,T>::get()
+template<class K, class T, class A>
+typename Tiq::Tree::ValuesCollection<K,T,A>::value_t& Tiq::Tree::ValuesCollection<K,T,A>::get()
 {
 	auto node = this->parent(this->end());
 
@@ -164,8 +164,8 @@ T& Tiq::Tree::ValuesCollection<K,T>::get()
 	return node->data();
 }
 
-template<class K, class T>
-K Tiq::Tree::ValuesCollection<K,T>::min()
+template<class K, class T, class A>
+typename Tiq::Tree::ValuesCollection<K,T,A>::key_t Tiq::Tree::ValuesCollection<K,T,A>::min()
 {
 	if (!this->size()) {
 		throw std::logic_error("No data found");
@@ -174,46 +174,37 @@ K Tiq::Tree::ValuesCollection<K,T>::min()
 	return this->begin()->key();
 }
 
-template<class K, class T>
-bool Tiq::Tree::ValuesCollection<K,T>::is_min(K key)
+template<class K, class T, class A>
+bool Tiq::Tree::ValuesCollection<K,T,A>::is_min(key_t key)
 {
 	auto node = this->begin();
 	return !node->is_end() && node->key() == key;
 }
 
-template<class K, class T>
-bool Tiq::Tree::ValuesCollection<K,T>::has(K key)
+template<class K, class T, class A>
+bool Tiq::Tree::ValuesCollection<K,T,A>::has(key_t key)
 {
-	auto node = bs_find(key);
-
-	// Get upper bound.
-	node = this->find_next(node);
-
-	// Move one back.
-	node = this->find_prev(node);
-
+	auto node = this->bs_find_floor(key);
 	return (node && !node->is_end());
 }
 
-template<class K, class T>
-bool Tiq::Tree::ValuesCollection<K,T>::has()
+template<class K, class T, class A>
+bool Tiq::Tree::ValuesCollection<K,T,A>::has()
 {
 	auto node = this->parent(this->end());
-
 	return (node && !node->is_end());
 }
 
 
-template<class K, class T>
-bool Tiq::Tree::ValuesCollection<K,T>::contains(K key)
+template<class K, class T, class A>
+bool Tiq::Tree::ValuesCollection<K,T,A>::contains(key_t key)
 {
-	auto node = bs_find(key);
-
+	auto node = this->bs_find(key);
 	return (node && !node->is_end());
 }
 
-template<class K, class T>
-std::vector<K> Tiq::Tree::ValuesCollection<K,T>::keys()
+template<class K, class T, class A>
+std::vector<K> Tiq::Tree::ValuesCollection<K,T,A>::keys()
 {
 	std::vector<K> ret;
 	auto b = this->begin();
@@ -224,14 +215,14 @@ std::vector<K> Tiq::Tree::ValuesCollection<K,T>::keys()
 	return ret;
 }
 
-template<class K, class T>
-std::vector<K> Tiq::Tree::ValuesCollection<K,T>::cut(K key)
+template<class K, class T, class A>
+std::vector<K> Tiq::Tree::ValuesCollection<K,T,A>::cut(key_t key)
 {
-	auto node = bs_find(key);
+	auto node = this->bs_find(key);
 	if (!node) {
 		node = this->find_next(node);
 	}
-	std::vector<ValueStatNode<K,T>*> delete_nodes;
+	std::vector<ValuesCollectionNode<K,T>*> delete_nodes;
 	std::vector<K> ret;
 	while(!node->is_end()) {
 		delete_nodes.push_back(node);
@@ -244,22 +235,10 @@ std::vector<K> Tiq::Tree::ValuesCollection<K,T>::cut(K key)
 	return ret;
 }
 
-template<class K, class T>
-Tiq::Tree::ValueStatNode<K,T>* Tiq::Tree::ValuesCollection<K,T>::bs_find(K key)
+template<class K, class T, class A>
+Tiq::Tree::ValuesCollection<K,T,A>* Tiq::Tree::ValuesCollection<K,T,A>::get_tree() const
 {
-	auto node = this->root();
-	while(!node->is_end()) {
-		if (key == node->key()) {
-			// Item found.
-			break;
-		}
-		if (key > node->key()) {
-			node = this->right(node);
-		} else {
-			node = this->left(node);
-		}
-	}
-	return node;
+	return const_cast<ValuesCollection<K,T,A>*>(this);
 }
 
 // LayerTree
