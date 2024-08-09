@@ -81,8 +81,8 @@ namespace Tiq::Tree {
 
 			void set(key_t key, value_t value);
 			void unset(key_t key);
-			value_t& get(key_t key);
-			value_t& get();
+			value_t* get(key_t key);
+			value_t* get();
 			bool has();
 			bool has(key_t key);
 			bool contains(key_t key);

@@ -33,7 +33,7 @@ typename Tiq::Tree::BSTree<T,N>::const_node_ptr_t Tiq::Tree::BSTree<T,N>::bs_fin
 // LayersCollection
 
 template<class K, class T, class A>
-void Tiq::Tree::LayersCollection<K,T,A>::set(K key, value_t value)
+void Tiq::Tree::LayersCollection<K,T,A>::set(key_t key, value_t value)
 {
 	auto node = this->bs_find(key);
 	node->key_ = key;
@@ -41,7 +41,7 @@ void Tiq::Tree::LayersCollection<K,T,A>::set(K key, value_t value)
 }
 
 template<class K, class T, class A>
-void Tiq::Tree::LayersCollection<K,T,A>::unset(K key)
+void Tiq::Tree::LayersCollection<K,T,A>::unset(key_t key)
 {
 	auto node = this->bs_find(key);
 	if (!node->is_end()) {
@@ -50,20 +50,20 @@ void Tiq::Tree::LayersCollection<K,T,A>::unset(K key)
 }
 
 template<class K, class T, class A>
-typename Tiq::Tree::LayersCollection<K,T,A>::value_t Tiq::Tree::LayersCollection<K,T,A>::get(K key)
+typename Tiq::Tree::LayersCollection<K,T,A>::value_t Tiq::Tree::LayersCollection<K,T,A>::get(key_t key)
 {
 	auto node = this->bs_find(key);
 
-	if (node->is_end()) return 0;
+	if (node->is_end()) return value_t{};
 	return node->data();
 }
 
 template<class K, class T, class A>
-typename Tiq::Tree::LayersCollection<K,T,A>::value_t Tiq::Tree::LayersCollection<K,T,A>::count(K key)
+typename Tiq::Tree::LayersCollection<K,T,A>::value_t Tiq::Tree::LayersCollection<K,T,A>::count(key_t key)
 {
 	auto node = this->bs_find_floor(key);
 
-	if (!node || node->is_end()) return 0;
+	if (!node || node->is_end()) return value_t{};
 
 	value_t value = this->left(node)->count() + node->data();
 	while(node) {
@@ -141,27 +141,27 @@ void Tiq::Tree::ValuesCollection<K,T,A>::unset(key_t key)
 }
 
 template<class K, class T, class A>
-typename Tiq::Tree::ValuesCollection<K,T,A>::value_t& Tiq::Tree::ValuesCollection<K,T,A>::get(K key)
+typename Tiq::Tree::ValuesCollection<K,T,A>::value_t* Tiq::Tree::ValuesCollection<K,T,A>::get(key_t key)
 {
 	auto node = this->bs_find_floor(key);
 
-	if (!node || node->is_end()) {
-		throw std::logic_error("No data found");
+	if (node && !node->is_end()) {
+		return &(node->data());
 	}
 
-	return node->data();
+	return nullptr;
 }
 
 template<class K, class T, class A>
-typename Tiq::Tree::ValuesCollection<K,T,A>::value_t& Tiq::Tree::ValuesCollection<K,T,A>::get()
+typename Tiq::Tree::ValuesCollection<K,T,A>::value_t* Tiq::Tree::ValuesCollection<K,T,A>::get()
 {
 	auto node = this->parent(this->end());
 
-	if (!node || node->is_end()) {
-		throw std::logic_error("No data found");
+	if (node && !node->is_end()) {
+		return &(node->data());
 	}
 
-	return node->data();
+	return nullptr;
 }
 
 template<class K, class T, class A>
@@ -203,19 +203,25 @@ size_t Tiq::Tree::LayerNode<K,T>::count(layer_key_t key)
 template<class K, class T>
 typename Tiq::Tree::LayerNode<K,T>::value_type& Tiq::Tree::LayerNode<K,T>::data()
 {
+	value_type* value;
 	if (has_branch_end()) {
-		return inserts_.get(*branch_end());
+		value = inserts_.get(*branch_end());
+	} else {
+		value = inserts_.get();
 	}
-	return inserts_.get();
+	if (!value) {
+		throw std::logic_error("no data found");
+	}
+	return *value;
 }
 
 template<class K, class T>
 typename Tiq::Tree::LayerNode<K,T>::value_type& Tiq::Tree::LayerNode<K,T>::data(layer_key_t key)
 {
 	if(!has_data(key)){
-		throw std::logic_error("No data found");
+		throw std::logic_error("no data found");
 	}
-	return inserts_.get(key);
+	return *(inserts_.get(key));
 }
 
 template<class K, class T>

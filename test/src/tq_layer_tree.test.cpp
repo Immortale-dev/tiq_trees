@@ -205,31 +205,30 @@ DESCRIBE("Tiq::Tree::ValuesCollection", {
 				EXPECT(tree->contains(18)).toBe(false);
 			});
 
-			IT("should get currect data", {
+			IT("should get correct data", {
 				for (int i=1;i<=5;i++) {
 					EXPECT(tree->has(i)).toBe(true);
-					EXPECT(tree->get(i)).toBe(i*2);
+					EXPECT(*(tree->get(i))).toBe(i*2);
 				}
 				for (int i=11;i<=15;i++) {
 					EXPECT(tree->has(i)).toBe(true);
-					EXPECT(tree->get(i)).toBe(i*2);
+					EXPECT(*(tree->get(i))).toBe(i*2);
 				}
 				for (int i=6;i<=10;i++) {
 					EXPECT(tree->has(i)).toBe(true);
-					EXPECT(tree->get(i)).toBe(10);
+					EXPECT(*(tree->get(i))).toBe(10);
 				}
 				for (int i=16;i<=50;i++) {
 					EXPECT(tree->has(i)).toBe(true);
-					EXPECT(tree->get(i)).toBe(30);
+					EXPECT(*(tree->get(i))).toBe(30);
 				}
 				for (int i=-10;i<=0;i++) {
 					EXPECT(tree->has(i)).toBe(false);
+					EXPECT(tree->get(i)).toBe(nullptr);
 				}
-				EXPECT([tree](){
-					tree->get(0);
-				}).toThrowError();
+				EXPECT(tree->get(0)).toBe(nullptr);
 				EXPECT(tree->has()).toBe(true);
-				EXPECT(tree->get()).toBe(30);
+				EXPECT(*(tree->get())).toBe(30);
 			});
 
 			IT("should return correct keys", {
@@ -251,8 +250,8 @@ DESCRIBE("Tiq::Tree::ValuesCollection", {
 
 				IT("should get correctly", {
 					EXPECT(tree->size()).toBe(8);
-					EXPECT(tree->get()).toBe(28);
-					EXPECT(tree->get(13)).toBe(24);
+					EXPECT(*tree->get()).toBe(28);
+					EXPECT(*tree->get(13)).toBe(24);
 				});
 
 				IT("should return correct keys", {
@@ -275,9 +274,7 @@ DESCRIBE("Tiq::Tree::ValuesCollection", {
 					EXPECT(tree->size()).toBe(0);
 					EXPECT(tree->has()).toBe(false);
 					EXPECT(tree->has(1)).toBe(false);
-					EXPECT([tree](){
-						tree->get();
-					}).toThrowError();
+					EXPECT(tree->get()).toBe(nullptr);
 				});
 
 				IT("should return empty array", {
