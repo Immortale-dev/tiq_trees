@@ -198,7 +198,7 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::after(cons
 template<class N, class A>
 typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::insert(const_node_ptr_t cnode, T data)
 {
-	cnode->data() = data;
+	cnode->data_ = data;
 	node_ptr_t node = to_internal_node(cnode);
 	return to_public_node(insert_(node));
 }

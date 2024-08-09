@@ -20,7 +20,7 @@ namespace Tiq::Tree {
 		public:
 			using key_t = K;
 
-			const key_t& key(){ return key_; }
+			const key_t& key() const { return key_; }
 
 		protected:
 			key_t key_;
@@ -56,8 +56,8 @@ namespace Tiq::Tree {
 			void unset(key_t key);
 			void add(key_t key, value_t value);
 			void merge(const LayersCollection<K,T,A>& collection);
-			value_t get(key_t key);
-			value_t count(key_t key);
+			value_t get(key_t key) const;
+			value_t count(key_t key) const;
 
 		protected:
 			void calc_count(node_ptr_t x) override;
@@ -81,11 +81,11 @@ namespace Tiq::Tree {
 
 			void set(key_t key, value_t value);
 			void unset(key_t key);
-			value_t* get(key_t key);
-			value_t* get();
-			bool has();
-			bool has(key_t key);
-			bool contains(key_t key);
+			const value_t* get(key_t key) const;
+			const value_t* get() const;
+			bool has() const;
+			bool has(key_t key) const;
+			bool contains(key_t key) const;
 
 		protected:
 			ValuesCollection<K,T,A>* get_tree() const override;
@@ -99,20 +99,21 @@ namespace Tiq::Tree {
 			using layer_key_t = K;
 			using LayerVector = std::vector<layer_key_t>;
 
-			using CountNode<T>::count;
-			size_t count(layer_key_t key);
-			T& data();
-			T& data(layer_key_t key);
-			bool has_branch_begin();
-			bool has_branch_end();
-			bool is_branch_begin(layer_key_t layer);
-			bool is_branch_end(layer_key_t layer);
-			bool has_branch(layer_key_t layer);
-			bool has_data(layer_key_t layer);
-			const layer_key_t* branch_begin();
-			const layer_key_t* branch_end();
-			size_t size();
-			LayerVector keys();
+			using CountNode<value_type>::count;
+
+			size_t count(layer_key_t key) const;
+			const value_type& data() const;
+			const value_type& data(layer_key_t key) const;
+			bool has_branch_begin() const;
+			bool has_branch_end() const;
+			bool is_branch_begin(layer_key_t layer) const;
+			bool is_branch_end(layer_key_t layer) const;
+			bool has_branch(layer_key_t layer) const;
+			bool has_data(layer_key_t layer) const;
+			const layer_key_t* branch_begin() const;
+			const layer_key_t* branch_end() const;
+			size_t size() const;
+			LayerVector keys() const;
 
 		protected:
 			struct LayerRange {
@@ -123,28 +124,30 @@ namespace Tiq::Tree {
 			LayerVector erase_(layer_key_t layer);
 			LayerVector remove_(layer_key_t layer);
 			LayerVector clear_();
-			LayerRange get_range();
-			LayerVector merge_ranges(LayerRange r1, LayerRange r2);
-			bool empty_();
+			LayerRange get_range() const;
+			LayerVector merge_ranges(LayerRange r1, LayerRange r2) const;
+			bool empty_() const;
 
-			ValuesCollection<K,T> inserts_;
-			ValuesCollection<K,bool> erases_;
-			LayersCollection<K> insert_layers_;
-			LayersCollection<K> erase_layers_;
+			ValuesCollection<layer_key_t,value_type> inserts_;
+			ValuesCollection<layer_key_t,bool> erases_;
+			LayersCollection<layer_key_t> insert_layers_;
+			LayersCollection<layer_key_t> erase_layers_;
 	};
 
 	template<class N, class A = std::allocator<N>>
 	class LayerTree : public CountTree<N, A> {
-		using T = typename N::value_type;
+		using value_type = typename N::value_type;
 		using node_ptr_t = InternalNode*;
 		using const_node_ptr_t = N*;
 		using layer_key_t = typename N::layer_key_t;
-		using comparator_fn_t = std::function<int(T&)>;
+		using comparator_fn_t = std::function<int(const value_type&)>;
 
 		public:
-			const_node_ptr_t insert(const_node_ptr_t node, T data, layer_key_t layer);
+			const_node_ptr_t insert(const_node_ptr_t node, value_type data, layer_key_t layer);
 			const_node_ptr_t erase(const_node_ptr_t node);
 			const_node_ptr_t erase(const_node_ptr_t node, layer_key_t layer, bool remove = false);
+			const_node_ptr_t remove(const_node_ptr_t node, layer_key_t layer);
+			const_node_ptr_t remove(const_node_ptr_t node);
 			const_node_ptr_t find(comparator_fn_t comp) const;
 			const_node_ptr_t find(const_node_ptr_t node, comparator_fn_t comp) const;
 			const_node_ptr_t find_min(const_node_ptr_t node = nullptr) const;

@@ -22,7 +22,7 @@ namespace TEST_LAYER {
 	struct bs_find {
 		bs_find(T val): val_(val) {}
 
-		int operator()(T& n) {
+		int operator()(const T& n) {
 			if (n == val_) return 0;
 			if (n > val_) return -1;
 			return 1;

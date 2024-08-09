@@ -25,12 +25,13 @@ namespace Tiq::Tree {
 
 	template<class T>
 	class Node : public InternalNode {
+		template<class _N, class _A> friend class Tree;
 		public:
 			using value_type = T;
 
-			T& data() { return data_; }
+			const T& data() const { return data_; }
 
-		private:
+		protected:
 			T data_ = {};
 	};
 
@@ -40,7 +41,7 @@ namespace Tiq::Tree {
 			using T = typename N::value_type;
 			using node_ptr_t = InternalNode*;
 			using const_node_ptr_t = N*;
-			using comparator_fn_t = std::function<int(T&)>;
+			using comparator_fn_t = std::function<int(const T&)>;
 
 			Tree();
 			virtual ~Tree();
