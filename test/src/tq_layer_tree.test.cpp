@@ -45,8 +45,7 @@ namespace TEST_LAYER {
 	void print_tree(MyTree* tree) {
 		auto b = tree->begin();
 		while(!b->is_end()) {
-			std::cout << "=== (" << (b->empty() ? 0 : b->data(b->min_key())) << ")" << (tree->find_index(b)+1) << " <- " << (tree->parent(b) ? (tree->find_index(tree->parent(b))+1) : 0) << "===" << std::endl;
-			b->debug();
+			std::cout << "===" << (tree->find_index(b)+1) << " <- " << (tree->parent(b) ? (tree->find_index(tree->parent(b))+1) : 0) << "===" << std::endl;
 			b = tree->find_next(b);
 		}
 	}
@@ -234,7 +233,13 @@ DESCRIBE("Tiq::Tree::ValuesCollection", {
 			});
 
 			IT("should return correct keys", {
-				EXPECT(tree->keys()).toBeIterableEqual({1,2,3,4,5,11,12,13,14,15});
+				std::vector<int> keys;
+				auto b = tree->begin();
+				while(!b->is_end()) {
+					keys.push_back(b->key());
+					b = tree->find_next(b);
+				}
+				EXPECT(keys).toBeIterableEqual({1,2,3,4,5,11,12,13,14,15});
 			});
 
 			DESCRIBE("unset some of the keys", {
@@ -251,27 +256,13 @@ DESCRIBE("Tiq::Tree::ValuesCollection", {
 				});
 
 				IT("should return correct keys", {
-					EXPECT(tree->keys()).toBeIterableEqual({1,2,3,4,5,11,12,14});
-				});
-			});
-
-			DESCRIBE("cut items", {
-				BEFORE_EACH({
-					tree->cut(4);
-				});
-
-				IT("should get correctly", {
-					for (int i=1;i<=3;i++) {
-						EXPECT(tree->get(i)).toBe(i*2);
+					std::vector<int> keys;
+					auto b = tree->begin();
+					while(!b->is_end()) {
+						keys.push_back(b->key());
+						b = tree->find_next(b);
 					}
-					EXPECT(tree->size()).toBe(3);
-					EXPECT(tree->get(4)).toBe(6);
-					EXPECT(tree->get()).toBe(6);
-					EXPECT(tree->has(0)).toBe(false);
-				});
-
-				IT("should return correct keys", {
-					EXPECT(tree->keys()).toBeIterableEqual({1,2,3});
+					EXPECT(keys).toBeIterableEqual({1,2,3,4,5,11,12,14});
 				});
 			});
 
@@ -290,7 +281,13 @@ DESCRIBE("Tiq::Tree::ValuesCollection", {
 				});
 
 				IT("should return empty array", {
-					EXPECT(tree->keys().size()).toBe(0);
+					std::vector<int> keys;
+					auto b = tree->begin();
+					while(!b->is_end()) {
+						keys.push_back(b->key());
+						b = tree->find_next(b);
+					}
+					EXPECT(keys.size()).toBe(0);
 				});
 			});
 		});
@@ -317,7 +314,7 @@ DESCRIBE("Tiq::Tree::LayerTree", {
 			IT("should correctly assign layers", {
 				auto b = tree->begin();
 				while(!b->is_end()) {
-					EXPECT(b->has_layer(b->data())).toBe(true);
+					EXPECT(b->has_branch(b->data())).toBe(true);
 					b = tree->find_next(b);
 				}
 			});

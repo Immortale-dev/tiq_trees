@@ -165,23 +165,6 @@ typename Tiq::Tree::ValuesCollection<K,T,A>::value_t& Tiq::Tree::ValuesCollectio
 }
 
 template<class K, class T, class A>
-typename Tiq::Tree::ValuesCollection<K,T,A>::key_t Tiq::Tree::ValuesCollection<K,T,A>::min()
-{
-	if (!this->size()) {
-		throw std::logic_error("No data found");
-	}
-
-	return this->begin()->key();
-}
-
-template<class K, class T, class A>
-bool Tiq::Tree::ValuesCollection<K,T,A>::is_min(key_t key)
-{
-	auto node = this->begin();
-	return !node->is_end() && node->key() == key;
-}
-
-template<class K, class T, class A>
 bool Tiq::Tree::ValuesCollection<K,T,A>::has(key_t key)
 {
 	auto node = this->bs_find_floor(key);
@@ -204,41 +187,198 @@ bool Tiq::Tree::ValuesCollection<K,T,A>::contains(key_t key)
 }
 
 template<class K, class T, class A>
-std::vector<K> Tiq::Tree::ValuesCollection<K,T,A>::keys()
-{
-	std::vector<K> ret;
-	auto b = this->begin();
-	while(!b->is_end()) {
-		ret.push_back(b->key());
-		b = this->find_next(b);
-	}
-	return ret;
-}
-
-template<class K, class T, class A>
-std::vector<K> Tiq::Tree::ValuesCollection<K,T,A>::cut(key_t key)
-{
-	auto node = this->bs_find(key);
-	if (!node) {
-		node = this->find_next(node);
-	}
-	std::vector<ValuesCollectionNode<K,T>*> delete_nodes;
-	std::vector<K> ret;
-	while(!node->is_end()) {
-		delete_nodes.push_back(node);
-		ret.push_back(node->key());
-		node = this->find_next(node);
-	}
-	for (auto n : delete_nodes) {
-		this->erase(n);
-	}
-	return ret;
-}
-
-template<class K, class T, class A>
 Tiq::Tree::ValuesCollection<K,T,A>* Tiq::Tree::ValuesCollection<K,T,A>::get_tree() const
 {
 	return const_cast<ValuesCollection<K,T,A>*>(this);
+}
+
+// LayerNode
+
+template<class K, class T>
+size_t Tiq::Tree::LayerNode<K,T>::count(layer_key_t key)
+{
+	return insert_layers_.count(key) - erase_layers_.count(key);
+}
+
+template<class K, class T>
+typename Tiq::Tree::LayerNode<K,T>::value_type& Tiq::Tree::LayerNode<K,T>::data()
+{
+	if (has_branch_end()) {
+		return inserts_.get(*branch_end());
+	}
+	return inserts_.get();
+}
+
+template<class K, class T>
+typename Tiq::Tree::LayerNode<K,T>::value_type& Tiq::Tree::LayerNode<K,T>::data(layer_key_t key)
+{
+	if(!has_data(key)){
+		throw std::logic_error("No data found");
+	}
+	return inserts_.get(key);
+}
+
+template<class K, class T>
+bool Tiq::Tree::LayerNode<K,T>::has_branch_begin()
+{
+	return inserts_.size() && (!erases_.size() || inserts_.begin()->key() < erases_.begin()->key());
+}
+
+template<class K, class T>
+bool Tiq::Tree::LayerNode<K,T>::has_branch_end()
+{
+	return has_branch_begin() && erases_.size();
+}
+
+template<class K, class T>
+bool Tiq::Tree::LayerNode<K,T>::is_branch_begin(layer_key_t layer)
+{
+	return has_branch_begin() && *branch_begin() == layer;
+}
+
+template<class K, class T>
+bool Tiq::Tree::LayerNode<K,T>::is_branch_end(layer_key_t layer)
+{
+	return has_branch_end() && *branch_end() == layer;
+}
+
+template<class K, class T>
+bool Tiq::Tree::LayerNode<K,T>::has_branch(layer_key_t layer)
+{
+	return inserts_.contains(layer) || erases_.contains(layer);
+}
+
+template<class K, class T>
+bool Tiq::Tree::LayerNode<K,T>::has_data(layer_key_t layer)
+{
+	return inserts_.has(layer) && !erases_.has(layer);
+}
+
+template<class K, class T>
+const typename Tiq::Tree::LayerNode<K,T>::layer_key_t* Tiq::Tree::LayerNode<K,T>::branch_begin()
+{
+	if (has_branch_begin()) {
+		return &(inserts_.begin()->key());
+	}
+	return nullptr;
+}
+
+template<class K, class T>
+const typename Tiq::Tree::LayerNode<K,T>::layer_key_t* Tiq::Tree::LayerNode<K,T>::branch_end()
+{
+	if (has_branch_end()) {
+		return &(erases_.begin()->key());
+	}
+	return nullptr;
+}
+
+template<class K, class T>
+size_t Tiq::Tree::LayerNode<K,T>::size()
+{
+	return inserts_.size() + erases_.size();
+}
+
+template<class K, class T>
+typename Tiq::Tree::LayerNode<K,T>::LayerVector Tiq::Tree::LayerNode<K,T>::keys()
+{
+	auto insert_node = inserts_.begin();
+	auto erase_node = erases_.begin();
+	LayerVector ret;
+	while (!insert_node->is_end() || !erase_node->is_end()) {
+		if (!erase_node->is_end() && (insert_node->is_end() || erase_node->key() < insert_node->key())) {
+			ret.push_back(erase_node->key());
+			erase_node = erases_.find_next(erase_node);
+			continue;
+		}
+		if (!insert_node->is_end() && (erase_node->is_end() || insert_node->key() < erase_node->key())) {
+			ret.push_back(insert_node->key());
+			insert_node = inserts_.find_next(insert_node);
+			continue;
+		}
+	}
+	return ret;
+}
+
+template<class K, class T>
+typename Tiq::Tree::LayerNode<K,T>::LayerVector Tiq::Tree::LayerNode<K,T>::insert_(layer_key_t layer, value_type& value)
+{
+	LayerRange range = get_range();
+
+	inserts_.set(layer, value);
+	erases_.unset(layer);
+
+	return merge_ranges(range, get_range());
+}
+
+template<class K, class T>
+typename Tiq::Tree::LayerNode<K,T>::LayerVector Tiq::Tree::LayerNode<K,T>::erase_(layer_key_t layer)
+{
+	LayerRange range = get_range();
+
+	inserts_.unset(layer);
+	erases_.set(layer, true);
+
+	return merge_ranges(range, get_range());
+}
+
+template<class K, class T>
+typename Tiq::Tree::LayerNode<K,T>::LayerVector Tiq::Tree::LayerNode<K,T>::remove_(layer_key_t layer)
+{
+	LayerRange range = get_range();
+
+	inserts_.unset(layer);
+	erases_.unset(layer);
+
+	return merge_ranges(range, get_range());
+}
+
+template<class K, class T>
+typename Tiq::Tree::LayerNode<K,T>::LayerVector Tiq::Tree::LayerNode<K,T>::clear_()
+{
+	LayerRange range = get_range();
+
+	inserts_.clear();
+	erases_.clear();
+
+	return merge_ranges(range, get_range());
+}
+
+template<class K, class T>
+typename Tiq::Tree::LayerNode<K,T>::LayerRange Tiq::Tree::LayerNode<K,T>::get_range()
+{
+	LayerRange ret;
+	if (has_branch_begin()) {
+		ret.begin = *branch_begin();
+	}
+	if (has_branch_end()) {
+		ret.end = *branch_end();
+	}
+	return ret;
+}
+
+template<class K, class T>
+typename Tiq::Tree::LayerNode<K,T>::LayerVector Tiq::Tree::LayerNode<K,T>::merge_ranges(LayerRange r1, LayerRange r2)
+{
+	LayerVector ret;
+	if (r1.begin && (!r2.begin || r1.begin.value() != r2.begin.value())) {
+		ret.push_back(r1.begin.value());
+	}
+	if (r2.begin && (!r1.begin || r1.begin.value() != r2.begin.value())) {
+		ret.push_back(r2.begin.value());
+	}
+	if (r1.end && (!r2.end || r1.end.value() != r2.end.value())) {
+		ret.push_back(r1.end.value());
+	}
+	if (r2.end && (!r1.end || r1.end.value() != r2.end.value())) {
+		ret.push_back(r2.end.value());
+	}
+	return ret;
+}
+
+template<class K, class T>
+bool Tiq::Tree::LayerNode<K,T>::empty_()
+{
+	return !inserts_.size() && !erases_.size();
 }
 
 // LayerTree
@@ -382,7 +522,7 @@ typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::
 			node = par;
 			continue;
 		}
-		if (node == this->left(par) && par->is_layer(layer)) {
+		if (node == this->left(par) && par->has_data(layer)) {
 			return par;
 		}
 		node = par;
@@ -412,7 +552,7 @@ typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::
 			node = par;
 			continue;
 		}
-		if (node == this->right(par) && par->is_layer(layer)) {
+		if (node == this->right(par) && par->has_data(layer)) {
 			return par;
 		}
 		node = par;
@@ -474,10 +614,10 @@ void Tiq::Tree::LayerTree<N,A>::layer_count_update(node_ptr_t node, layer_key_t 
 
 	auto insert_value = left->insert_layers_.get(layer) + right->insert_layers_.get(layer);
 	auto erase_value = left->erase_layers_.get(layer) + right->erase_layers_.get(layer);
-	if (!n->empty() && n->is_min(layer)) {
+	if (n->is_branch_begin(layer)) {
 		++insert_value;
 	}
-	if (!n->empty() && n->is_cut_at(layer)) {
+	if (n->is_branch_end(layer)) {
 		++erase_value;
 	}
 	n->insert_layers_.set(layer, insert_value);
@@ -501,11 +641,11 @@ void Tiq::Tree::LayerTree<N,A>::wide_count_update(node_ptr_t node)
 	erase_layers.merge(left->erase_layers_);
 	erase_layers.merge(right->erase_layers_);
 
-	if (!n->empty()) {
-		insert_layers.add(n->min_key(), 1);
+	if (n->has_branch_begin()) {
+		insert_layers.add(*(n->branch_begin()), 1);
 	}
-	if (!n->empty() && n->is_cut()) {
-		erase_layers.add(n->cut_key(), 1);
+	if (n->has_branch_end()) {
+		erase_layers.add(*(n->branch_end()), 1);
 	}
 }
 
@@ -532,12 +672,12 @@ typename Tiq::Tree::LayerTree<N,A>::const_node_ptr_t Tiq::Tree::LayerTree<N,A>::
 	}
 	while(true) {
 		size_t left_count = this->left(node)->count(layer);
-		if (left_count == count && node->is_layer(layer)) {
+		if (left_count == count && node->has_data(layer)) {
 			return node;
 		}
 		if (left_count <= count) {
 			count -= left_count;
-			if (node->is_layer(layer)) {
+			if (node->has_data(layer)) {
 				--count;
 			}
 			node = this->right(node);
@@ -576,7 +716,7 @@ size_t Tiq::Tree::LayerTree<N,A>::find_index(const_node_ptr_t node, const_node_p
 		}
 		if (this->right(par) == node) {
 			count += this->left(par)->count(layer);
-			if (par->is_layer(layer)) {
+			if (par->has_data(layer)) {
 				++count;
 			}
 		}
