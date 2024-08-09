@@ -100,7 +100,6 @@ namespace Tiq::Tree {
 			using LayerVector = std::vector<layer_key_t>;
 
 			using CountNode<value_type>::count;
-
 			size_t count(layer_key_t key) const;
 			const value_type& data() const;
 			const value_type& data(layer_key_t key) const;

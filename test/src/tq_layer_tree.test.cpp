@@ -765,6 +765,39 @@ DESCRIBE("Tiq::Tree::LayerTree", {
 							}
 						});
 
+						IT("should correctly get branch range", {
+							std::vector<std::vector<int>> results{
+								{3},{3},{},{2,3},{2,3},{2,3},{},{},{3,4},{},
+								{2,4},{},{},{2},{4},
+							};
+
+							auto b = tree->begin();
+							int ind = 0;
+							while (!b->is_end()) {
+								auto& res = results[ind++];
+								EXPECT(b->has_branch_begin()).toBe(res.size() > 0);
+								EXPECT(b->has_branch_end()).toBe(res.size() > 1);
+								if (res.size() > 0) {
+									EXPECT(*b->branch_begin()).toBe(res[0]);
+									EXPECT(b->is_branch_begin(res[0])).toBe(true);
+								} else {
+									EXPECT(b->branch_begin()).toBe(nullptr);
+								}
+								if (res.size() > 1) {
+									EXPECT(*b->branch_end()).toBe(res[1]);
+									EXPECT(b->is_branch_end(res[1])).toBe(true);
+								} else {
+									EXPECT(b->branch_end()).toBe(nullptr);
+								}
+								EXPECT(b->is_branch_begin(1)).toBe(false);
+								EXPECT(b->is_branch_begin(5)).toBe(false);
+								EXPECT(b->is_branch_end(1)).toBe(false);
+								EXPECT(b->is_branch_end(1)).toBe(false);
+
+								b = tree->find_next(b);
+							}
+						});
+
 						DESCRIBE("add and remove some items", {
 							/*
 								1|            11, 12, 13, 14, 15,
@@ -856,6 +889,21 @@ DESCRIBE("Tiq::Tree::LayerTree", {
 										EXPECT(tree->find_index(tree->find_nth(i,layer), layer)).toBe(i);
 									}
 									EXPECT(tree->find_nth(result.size(), layer)->is_end()).toBe(true);
+								}
+							});
+
+							IT("should correctly get keys", {
+								std::vector<std::vector<int>> results{
+									{3},{3},{3},{1},{1},{1},{1},{1},{2},{2,4},
+									{2,4},{5},{5},{5},{2,3,4},{3,4},{2,3,4},{2,4},{4},{4},
+									{2,4},{2,4},{2,4},{4}
+								};
+
+								auto b = tree->begin();
+								int ind = 0;
+								while (!b->is_end()) {
+									EXPECT(b->keys()).toBeIterableEqual(results[ind++]);
+									b = tree->find_next(b);
 								}
 							});
 						});
