@@ -1,5 +1,5 @@
-#ifndef TQ_LAYER_TREE_H_
-#define TQ_LAYER_TREE_H_
+#ifndef TQ_BRANCH_TREE_H_
+#define TQ_BRANCH_TREE_H_
 
 #include <cstdint>
 #include <type_traits>
@@ -92,82 +92,81 @@ namespace Tiq::Tree {
 	};
 
 	template<class K, class T>
-	class LayerNode : public CountNode<T> {
-		template<class N, class A> friend class LayerTree;
+	class BranchNode : public CountNode<T> {
+		template<class N, class A> friend class BranchTree;
 		public:
 			using value_type = T;
-			using layer_key_t = K;
-			using LayerVector = std::vector<layer_key_t>;
-
-			using CountNode<value_type>::count;
-			size_t count(layer_key_t key) const;
-			const value_type& data() const;
-			const value_type& data(layer_key_t key) const;
-			bool has_branch_begin() const;
-			bool has_branch_end() const;
-			bool is_branch_begin(layer_key_t layer) const;
-			bool is_branch_end(layer_key_t layer) const;
-			bool has_branch(layer_key_t layer) const;
-			bool has_data(layer_key_t layer) const;
-			const layer_key_t* branch_begin() const;
-			const layer_key_t* branch_end() const;
-			size_t size() const;
-			LayerVector keys() const;
-
-		protected:
-			struct LayerRange {
-				std::optional<layer_key_t> begin, end;
+			using branch_type = K;
+			using BranchVector = std::vector<branch_type>;
+			struct BranchRange {
+				std::optional<branch_type> begin, end;
 			};
 
-			LayerVector insert_(layer_key_t layer, value_type& value);
-			LayerVector erase_(layer_key_t layer);
-			LayerVector remove_(layer_key_t layer);
-			LayerVector clear_();
-			LayerRange get_range() const;
-			LayerVector merge_ranges(LayerRange r1, LayerRange r2) const;
+			using CountNode<value_type>::count;
+			size_t count(branch_type key) const;
+			const value_type& data() const;
+			const value_type& data(branch_type key) const;
+			bool has_branch_begin() const;
+			bool has_branch_end() const;
+			bool is_branch_begin(branch_type key) const;
+			bool is_branch_end(branch_type key) const;
+			bool has_branch(branch_type key) const;
+			bool has_data(branch_type key) const;
+			const branch_type* branch_begin() const;
+			const branch_type* branch_end() const;
+			size_t size() const;
+			BranchVector keys() const;
+
+		protected:
+			BranchVector insert_(branch_type key, value_type& value);
+			BranchVector erase_(branch_type key);
+			BranchVector remove_(branch_type key);
+			BranchVector clear_();
+			BranchRange get_range() const;
+			BranchVector merge_ranges(BranchRange r1, BranchRange r2) const;
 			bool empty_() const;
 
-			ValuesCollection<layer_key_t,value_type> inserts_;
-			ValuesCollection<layer_key_t,bool> erases_;
-			LayersCollection<layer_key_t> insert_layers_;
-			LayersCollection<layer_key_t> erase_layers_;
+			ValuesCollection<branch_type,value_type> inserts_;
+			ValuesCollection<branch_type,bool> erases_;
+			LayersCollection<branch_type> insert_layers_;
+			LayersCollection<branch_type> erase_layers_;
 	};
 
 	template<class N, class A = std::allocator<N>>
-	class LayerTree : public CountTree<N, A> {
+	class BranchTree : public CountTree<N, A> {
 		using value_type = typename N::value_type;
 		using node_ptr_t = InternalNode*;
 		using const_node_ptr_t = N*;
-		using layer_key_t = typename N::layer_key_t;
+		using branch_type = typename N::branch_type;
 		using comparator_fn_t = std::function<int(const value_type&)>;
 
 		public:
-			const_node_ptr_t insert(const_node_ptr_t node, value_type data, layer_key_t layer);
+			const_node_ptr_t insert(const_node_ptr_t node, value_type data, branch_type key);
 			const_node_ptr_t erase(const_node_ptr_t node);
-			const_node_ptr_t erase(const_node_ptr_t node, layer_key_t layer, bool remove = false);
-			const_node_ptr_t remove(const_node_ptr_t node, layer_key_t layer);
+			const_node_ptr_t erase(const_node_ptr_t node, branch_type key, bool remove = false);
+			const_node_ptr_t remove(const_node_ptr_t node, branch_type key);
 			const_node_ptr_t remove(const_node_ptr_t node);
 			const_node_ptr_t find(comparator_fn_t comp) const;
 			const_node_ptr_t find(const_node_ptr_t node, comparator_fn_t comp) const;
 			const_node_ptr_t find_min(const_node_ptr_t node = nullptr) const;
 			const_node_ptr_t find_max(const_node_ptr_t node = nullptr) const;
-			const_node_ptr_t find_min(const_node_ptr_t node, layer_key_t layer) const;
-			const_node_ptr_t find_max(const_node_ptr_t node, layer_key_t layer) const;
-			const_node_ptr_t find_min(layer_key_t layer) const;
-			const_node_ptr_t find_max(layer_key_t layer) const;
+			const_node_ptr_t find_min(const_node_ptr_t node, branch_type key) const;
+			const_node_ptr_t find_max(const_node_ptr_t node, branch_type key) const;
+			const_node_ptr_t find_min(branch_type key) const;
+			const_node_ptr_t find_max(branch_type key) const;
 			const_node_ptr_t find_next(const_node_ptr_t node) const;
 			const_node_ptr_t find_prev(const_node_ptr_t node) const;
-			const_node_ptr_t find_next(const_node_ptr_t node, layer_key_t layer) const;
-			const_node_ptr_t find_prev(const_node_ptr_t node, layer_key_t layer) const;
+			const_node_ptr_t find_next(const_node_ptr_t node, branch_type key) const;
+			const_node_ptr_t find_prev(const_node_ptr_t node, branch_type key) const;
 			const_node_ptr_t find_nth(const_node_ptr_t node, size_t count) const;
 			const_node_ptr_t find_nth(size_t count) const;
-			const_node_ptr_t find_nth(const_node_ptr_t node, size_t count, layer_key_t layer) const;
-			const_node_ptr_t find_nth(size_t count, layer_key_t layer) const;
+			const_node_ptr_t find_nth(const_node_ptr_t node, size_t count, branch_type key) const;
+			const_node_ptr_t find_nth(size_t count, branch_type key) const;
 			size_t find_index(const_node_ptr_t node, const_node_ptr_t parent = nullptr) const;
-			size_t find_index(const_node_ptr_t node, const_node_ptr_t parent, layer_key_t layer) const;
-			size_t find_index(const_node_ptr_t node, layer_key_t layer) const;
+			size_t find_index(const_node_ptr_t node, const_node_ptr_t parent, branch_type key) const;
+			size_t find_index(const_node_ptr_t node, branch_type key) const;
 			size_t size() const;
-			size_t size(layer_key_t layer) const;
+			size_t size(branch_type key) const;
 
 		protected:
 			void left_rotate(node_ptr_t x) override;
@@ -175,12 +174,12 @@ namespace Tiq::Tree {
 			void transplant(node_ptr_t u, node_ptr_t v) override;
 
 		private:
-			void upward_layer_count_update(node_ptr_t node, layer_key_t layer);
-			void layer_count_update(node_ptr_t node, layer_key_t layer);
+			void upward_layer_count_update(node_ptr_t node, branch_type key);
+			void layer_count_update(node_ptr_t node, branch_type key);
 			void wide_count_update(node_ptr_t node);
 	};
 }
 
 #include "tq_layer_tree.hpp"
 
-#endif // TQ_LAYER_TREE_H_
+#endif // TQ_BRANCH_TREE_H_

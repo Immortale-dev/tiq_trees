@@ -2,9 +2,9 @@
 
 #include "tq_layer_tree.h"
 
-namespace TEST_LAYER {
-	using Node = Tiq::Tree::LayerNode<int, int>;
-	using MyTree = Tiq::Tree::LayerTree<Node>;
+namespace TEST_BRANCH {
+	using Node = Tiq::Tree::BranchNode<int, int>;
+	using MyTree = Tiq::Tree::BranchTree<Node>;
 	using CollectionTree = Tiq::Tree::LayersCollection<int>;
 	using ValueTree = Tiq::Tree::ValuesCollection<int,int>;
 
@@ -53,7 +53,7 @@ namespace TEST_LAYER {
 
 SCENARIO_START
 
-using namespace TEST_LAYER;
+using namespace TEST_BRANCH;
 
 DESCRIBE("Tiq::Tree::LayersCollection", {
 	DESCRIBE("init tree", {
@@ -291,7 +291,7 @@ DESCRIBE("Tiq::Tree::ValuesCollection", {
 	});
 });
 
-DESCRIBE("Tiq::Tree::LayerTree", {
+DESCRIBE("Tiq::Tree::BranchTree", {
 	DESCRIBE("init the tree", {
 		MyTree* tree;
 		BEFORE_EACH({
