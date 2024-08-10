@@ -180,6 +180,6 @@ namespace Tiq::Tree {
 	};
 }
 
-#include "tq_layer_tree.hpp"
+#include "tq_branch_tree.hpp"
 
 #endif // TQ_BRANCH_TREE_H_

@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "tq_layer_tree.h"
+#include "tq_branch_tree.h"
 
 namespace TEST_BRANCH {
 	using Node = Tiq::Tree::BranchNode<int, int>;
