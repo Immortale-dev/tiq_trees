@@ -111,6 +111,7 @@ namespace Tiq::Tree {
 			bool is_branch_begin(branch_type key) const;
 			bool is_branch_end(branch_type key) const;
 			bool has_branch(branch_type key) const;
+			bool has_data() const;
 			bool has_data(branch_type key) const;
 			const branch_type* branch_begin() const;
 			const branch_type* branch_end() const;

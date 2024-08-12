@@ -203,11 +203,13 @@ size_t Tiq::Tree::BranchNode<K,T>::count(branch_type key) const
 template<class K, class T>
 const typename Tiq::Tree::BranchNode<K,T>::value_type& Tiq::Tree::BranchNode<K,T>::data() const
 {
+	const value_type* value;
 	if (has_branch_end()) {
-		return data(*branch_end());
+		value = inserts_.get(*branch_end());
+	} else {
+		value = inserts_.get();
 	}
 
-	auto value = inserts_.get();
 	if (!value) {
 		throw std::logic_error("no data found");
 	}
@@ -251,6 +253,19 @@ template<class K, class T>
 bool Tiq::Tree::BranchNode<K,T>::has_branch(branch_type key) const
 {
 	return inserts_.contains(key) || erases_.contains(key);
+}
+
+template<class K, class T>
+bool Tiq::Tree::BranchNode<K,T>::has_data() const
+{
+	const value_type* value;
+	if (has_branch_end()) {
+		value = inserts_.get(*branch_end());
+	} else {
+		value = inserts_.get();
+	}
+
+	return !!value;
 }
 
 template<class K, class T>
