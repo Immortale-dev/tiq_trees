@@ -338,6 +338,8 @@ ___
 
 TODO: describe
 
+___
+
 ### tiq::tree::BranchTree\<N,A\>
 
 *(declared in tq_branch_tree.h)*
