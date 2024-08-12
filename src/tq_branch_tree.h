@@ -13,83 +13,83 @@
 #include "tq_count_tree.h"
 
 namespace Tiq::Tree {
-	using collection_value_t = size_t;
+	namespace detail {
+		template<class K>
+		class KeyedNode {
+			public:
+				using key_t = K;
 
-	template<class K>
-	class KeyedNode {
-		public:
-			using key_t = K;
+				const key_t& key() const { return key_; }
 
-			const key_t& key() const { return key_; }
+			protected:
+				key_t key_;
+		};
 
-		protected:
-			key_t key_;
-	};
+		template<class T, class N>
+		class BSTree {
+			using const_node_ptr_t = N*;
+			using key_t = typename N::key_t;
 
-	template<class T, class N>
-	class BSTree {
-		using const_node_ptr_t = N*;
-		using key_t = typename N::key_t;
+			protected:
+				const_node_ptr_t bs_find(key_t key) const;
+				const_node_ptr_t bs_find_floor(key_t) const;
+				virtual T* get_tree() const = 0;
+		};
 
-		protected:
-			const_node_ptr_t bs_find(key_t key) const;
-			const_node_ptr_t bs_find_floor(key_t) const;
-			virtual T* get_tree() const = 0;
-	};
+		template<class K, class T>
+		class LayersCollectionNode : public CountNode<T>, public KeyedNode<K> {
+			using value_t = T;
+			template<class K_, class T_, class A_> friend class LayersCollection;
+		};
 
-	template<class K, class T>
-	class LayersCollectionNode : public CountNode<T>, public KeyedNode<K> {
-		using value_t = T;
-		template<class K_, class T_, class A_> friend class LayersCollection;
-	};
+		template <class K, class T = size_t, class A = std::allocator<LayersCollectionNode<K,T>>>
+		class LayersCollection : public CountTree<LayersCollectionNode<K,T>,A>, public BSTree<LayersCollection<K,T,A>, LayersCollectionNode<K,T>> {
+			public:
+				using public_node_t = LayersCollectionNode<K,T>;
+				using node_ptr_t = InternalNode*;
+				using const_node_ptr_t = public_node_t*;
+				using value_t = typename public_node_t::value_t;
+				using key_t = K;
 
-	template <class K, class T = collection_value_t, class A = std::allocator<LayersCollectionNode<K,T>>>
-	class LayersCollection : public CountTree<LayersCollectionNode<K,T>,A>, public BSTree<LayersCollection<K,T,A>, LayersCollectionNode<K,T>> {
-		public:
-			using public_node_t = LayersCollectionNode<K,T>;
-			using node_ptr_t = InternalNode*;
-			using const_node_ptr_t = public_node_t*;
-			using value_t = typename public_node_t::value_t;
-			using key_t = K;
+				void set(key_t key, value_t value);
+				void unset(key_t key);
+				void add(key_t key, value_t value);
+				void merge(const LayersCollection<K,T,A>& collection);
+				value_t get(key_t key) const;
+				value_t count(key_t key) const;
 
-			void set(key_t key, value_t value);
-			void unset(key_t key);
-			void add(key_t key, value_t value);
-			void merge(const LayersCollection<K,T,A>& collection);
-			value_t get(key_t key) const;
-			value_t count(key_t key) const;
+			protected:
+				void calc_count(node_ptr_t x) override;
+				LayersCollection<K,T,A>* get_tree() const override;
+		};
 
-		protected:
-			void calc_count(node_ptr_t x) override;
-			LayersCollection<K,T,A>* get_tree() const override;
-	};
+		template<class K, class T>
+		class ValuesCollectionNode : public Node<T>, public KeyedNode<K> {
+			using value_t = T;
+			template<class K_, class T_, class A_> friend class ValuesCollection;
+		};
 
-	template<class K, class T>
-	class ValuesCollectionNode : public Node<T>, public KeyedNode<K> {
-		using value_t = T;
-		template<class K_, class T_, class A_> friend class ValuesCollection;
-	};
+		template<class K, class T, class A = std::allocator<ValuesCollectionNode<K,T>>>
+		class ValuesCollection : public Tree<ValuesCollectionNode<K,T>,A>, public BSTree<ValuesCollection<K,T,A>, ValuesCollectionNode<K,T>> {
+			public:
+				using public_node_t = ValuesCollectionNode<K,T>;
+				using node_ptr_t = InternalNode*;
+				using const_node_ptr_t = public_node_t*;
+				using value_t = typename public_node_t::value_t;
+				using key_t = K;
 
-	template<class K, class T, class A = std::allocator<ValuesCollectionNode<K,T>>>
-	class ValuesCollection : public Tree<ValuesCollectionNode<K,T>,A>, public BSTree<ValuesCollection<K,T,A>, ValuesCollectionNode<K,T>> {
-		public:
-			using public_node_t = ValuesCollectionNode<K,T>;
-			using node_ptr_t = InternalNode*;
-			using const_node_ptr_t = public_node_t*;
-			using value_t = typename public_node_t::value_t;
-			using key_t = K;
+				void set(key_t key, value_t value);
+				void unset(key_t key);
+				const value_t* get(key_t key) const;
+				const value_t* get() const;
+				bool has() const;
+				bool has(key_t key) const;
+				bool contains(key_t key) const;
 
-			void set(key_t key, value_t value);
-			void unset(key_t key);
-			const value_t* get(key_t key) const;
-			const value_t* get() const;
-			bool has() const;
-			bool has(key_t key) const;
-			bool contains(key_t key) const;
-
-		protected:
-			ValuesCollection<K,T,A>* get_tree() const override;
-	};
+			protected:
+				ValuesCollection<K,T,A>* get_tree() const override;
+		};
+	}
 
 	template<class K, class T>
 	class BranchNode : public CountNode<T> {
@@ -126,10 +126,10 @@ namespace Tiq::Tree {
 			BranchVector merge_ranges(BranchRange r1, BranchRange r2) const;
 			bool empty_() const;
 
-			ValuesCollection<branch_type,value_type> inserts_;
-			ValuesCollection<branch_type,bool> erases_;
-			LayersCollection<branch_type> insert_layers_;
-			LayersCollection<branch_type> erase_layers_;
+			detail::ValuesCollection<branch_type,value_type> inserts_;
+			detail::ValuesCollection<branch_type,bool> erases_;
+			detail::LayersCollection<branch_type> insert_layers_;
+			detail::LayersCollection<branch_type> erase_layers_;
 	};
 
 	template<class N, class A = std::allocator<N>>

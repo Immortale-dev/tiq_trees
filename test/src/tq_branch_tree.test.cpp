@@ -5,8 +5,8 @@
 namespace TEST_BRANCH {
 	using Node = Tiq::Tree::BranchNode<int, int>;
 	using MyTree = Tiq::Tree::BranchTree<Node>;
-	using CollectionTree = Tiq::Tree::LayersCollection<int>;
-	using ValueTree = Tiq::Tree::ValuesCollection<int,int>;
+	using CollectionTree = Tiq::Tree::detail::LayersCollection<int>;
+	using ValueTree = Tiq::Tree::detail::ValuesCollection<int,int>;
 
 	std::vector<Node*> get_nodes(MyTree* tree) {
 		std::vector<Node*> res;
@@ -40,14 +40,6 @@ namespace TEST_BRANCH {
 		int res = dfs(tree, tree->left(node), callback) + dfs(tree, tree->right(node), callback) + 1;
 		callback(node, res);
 		return res;
-	}
-
-	void print_tree(MyTree* tree) {
-		auto b = tree->begin();
-		while(!b->is_end()) {
-			std::cout << "===" << (tree->find_index(b)+1) << " <- " << (tree->parent(b) ? (tree->find_index(tree->parent(b))+1) : 0) << "===" << std::endl;
-			b = tree->find_next(b);
-		}
 	}
 }
 

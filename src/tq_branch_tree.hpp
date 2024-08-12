@@ -1,7 +1,7 @@
 // BSTree
 
 template<class T, class N>
-typename Tiq::Tree::BSTree<T,N>::const_node_ptr_t Tiq::Tree::BSTree<T,N>::bs_find(key_t key) const
+typename Tiq::Tree::detail::BSTree<T,N>::const_node_ptr_t Tiq::Tree::detail::BSTree<T,N>::bs_find(key_t key) const
 {
 	auto tree = get_tree();
 	auto node = tree->root();
@@ -20,7 +20,7 @@ typename Tiq::Tree::BSTree<T,N>::const_node_ptr_t Tiq::Tree::BSTree<T,N>::bs_fin
 }
 
 template<class T, class N>
-typename Tiq::Tree::BSTree<T,N>::const_node_ptr_t Tiq::Tree::BSTree<T,N>::bs_find_floor(key_t key) const
+typename Tiq::Tree::detail::BSTree<T,N>::const_node_ptr_t Tiq::Tree::detail::BSTree<T,N>::bs_find_floor(key_t key) const
 {
 	auto tree = get_tree();
 	auto node = bs_find(key);
@@ -33,7 +33,7 @@ typename Tiq::Tree::BSTree<T,N>::const_node_ptr_t Tiq::Tree::BSTree<T,N>::bs_fin
 // LayersCollection
 
 template<class K, class T, class A>
-void Tiq::Tree::LayersCollection<K,T,A>::set(key_t key, value_t value)
+void Tiq::Tree::detail::LayersCollection<K,T,A>::set(key_t key, value_t value)
 {
 	auto node = this->bs_find(key);
 	node->key_ = key;
@@ -41,7 +41,7 @@ void Tiq::Tree::LayersCollection<K,T,A>::set(key_t key, value_t value)
 }
 
 template<class K, class T, class A>
-void Tiq::Tree::LayersCollection<K,T,A>::unset(key_t key)
+void Tiq::Tree::detail::LayersCollection<K,T,A>::unset(key_t key)
 {
 	auto node = this->bs_find(key);
 	if (!node->is_end()) {
@@ -50,7 +50,7 @@ void Tiq::Tree::LayersCollection<K,T,A>::unset(key_t key)
 }
 
 template<class K, class T, class A>
-typename Tiq::Tree::LayersCollection<K,T,A>::value_t Tiq::Tree::LayersCollection<K,T,A>::get(key_t key) const
+typename Tiq::Tree::detail::LayersCollection<K,T,A>::value_t Tiq::Tree::detail::LayersCollection<K,T,A>::get(key_t key) const
 {
 	auto node = this->bs_find(key);
 
@@ -59,7 +59,7 @@ typename Tiq::Tree::LayersCollection<K,T,A>::value_t Tiq::Tree::LayersCollection
 }
 
 template<class K, class T, class A>
-typename Tiq::Tree::LayersCollection<K,T,A>::value_t Tiq::Tree::LayersCollection<K,T,A>::count(key_t key) const
+typename Tiq::Tree::detail::LayersCollection<K,T,A>::value_t Tiq::Tree::detail::LayersCollection<K,T,A>::count(key_t key) const
 {
 	auto node = this->bs_find_floor(key);
 
@@ -78,7 +78,7 @@ typename Tiq::Tree::LayersCollection<K,T,A>::value_t Tiq::Tree::LayersCollection
 }
 
 template<class K, class T, class A>
-void Tiq::Tree::LayersCollection<K,T,A>::add(key_t key, value_t value)
+void Tiq::Tree::detail::LayersCollection<K,T,A>::add(key_t key, value_t value)
 {
 	auto node = this->bs_find(key);
 	if (!node->is_end()) {
@@ -91,7 +91,7 @@ void Tiq::Tree::LayersCollection<K,T,A>::add(key_t key, value_t value)
 }
 
 template<class K, class T, class A>
-void Tiq::Tree::LayersCollection<K,T,A>::merge(const LayersCollection<K,T,A>& collection)
+void Tiq::Tree::detail::LayersCollection<K,T,A>::merge(const LayersCollection<K,T,A>& collection)
 {
 	auto min = collection.find_min();
 	while (!min->is_end()) {
@@ -101,7 +101,7 @@ void Tiq::Tree::LayersCollection<K,T,A>::merge(const LayersCollection<K,T,A>& co
 }
 
 template<class K, class T, class A>
-void Tiq::Tree::LayersCollection<K,T,A>::calc_count(node_ptr_t x)
+void Tiq::Tree::detail::LayersCollection<K,T,A>::calc_count(node_ptr_t x)
 {
 	CountTree<LayersCollectionNode<K,T>,A>::calc_count(x);
 
@@ -116,7 +116,7 @@ void Tiq::Tree::LayersCollection<K,T,A>::calc_count(node_ptr_t x)
 }
 
 template<class K, class T, class A>
-Tiq::Tree::LayersCollection<K,T,A>* Tiq::Tree::LayersCollection<K,T,A>::get_tree() const
+Tiq::Tree::detail::LayersCollection<K,T,A>* Tiq::Tree::detail::LayersCollection<K,T,A>::get_tree() const
 {
 	return const_cast<LayersCollection<K,T,A>*>(this);
 }
@@ -124,7 +124,7 @@ Tiq::Tree::LayersCollection<K,T,A>* Tiq::Tree::LayersCollection<K,T,A>::get_tree
 // ValuesCollection
 
 template<class K, class T, class A>
-void Tiq::Tree::ValuesCollection<K,T,A>::set(key_t key, value_t value)
+void Tiq::Tree::detail::ValuesCollection<K,T,A>::set(key_t key, value_t value)
 {
 	auto node = this->bs_find(key);
 	node->key_ = key;
@@ -132,7 +132,7 @@ void Tiq::Tree::ValuesCollection<K,T,A>::set(key_t key, value_t value)
 }
 
 template<class K, class T, class A>
-void Tiq::Tree::ValuesCollection<K,T,A>::unset(key_t key)
+void Tiq::Tree::detail::ValuesCollection<K,T,A>::unset(key_t key)
 {
 	auto node = this->bs_find(key);
 	if (!node->is_end()) {
@@ -141,7 +141,7 @@ void Tiq::Tree::ValuesCollection<K,T,A>::unset(key_t key)
 }
 
 template<class K, class T, class A>
-const typename Tiq::Tree::ValuesCollection<K,T,A>::value_t* Tiq::Tree::ValuesCollection<K,T,A>::get(key_t key) const
+const typename Tiq::Tree::detail::ValuesCollection<K,T,A>::value_t* Tiq::Tree::detail::ValuesCollection<K,T,A>::get(key_t key) const
 {
 	auto node = this->bs_find_floor(key);
 
@@ -153,7 +153,7 @@ const typename Tiq::Tree::ValuesCollection<K,T,A>::value_t* Tiq::Tree::ValuesCol
 }
 
 template<class K, class T, class A>
-const typename Tiq::Tree::ValuesCollection<K,T,A>::value_t* Tiq::Tree::ValuesCollection<K,T,A>::get() const
+const typename Tiq::Tree::detail::ValuesCollection<K,T,A>::value_t* Tiq::Tree::detail::ValuesCollection<K,T,A>::get() const
 {
 	auto node = this->parent(this->end());
 
@@ -165,14 +165,14 @@ const typename Tiq::Tree::ValuesCollection<K,T,A>::value_t* Tiq::Tree::ValuesCol
 }
 
 template<class K, class T, class A>
-bool Tiq::Tree::ValuesCollection<K,T,A>::has(key_t key) const
+bool Tiq::Tree::detail::ValuesCollection<K,T,A>::has(key_t key) const
 {
 	auto node = this->bs_find_floor(key);
 	return (node && !node->is_end());
 }
 
 template<class K, class T, class A>
-bool Tiq::Tree::ValuesCollection<K,T,A>::has() const
+bool Tiq::Tree::detail::ValuesCollection<K,T,A>::has() const
 {
 	auto node = this->parent(this->end());
 	return (node && !node->is_end());
@@ -180,14 +180,14 @@ bool Tiq::Tree::ValuesCollection<K,T,A>::has() const
 
 
 template<class K, class T, class A>
-bool Tiq::Tree::ValuesCollection<K,T,A>::contains(key_t key) const
+bool Tiq::Tree::detail::ValuesCollection<K,T,A>::contains(key_t key) const
 {
 	auto node = this->bs_find(key);
 	return (node && !node->is_end());
 }
 
 template<class K, class T, class A>
-Tiq::Tree::ValuesCollection<K,T,A>* Tiq::Tree::ValuesCollection<K,T,A>::get_tree() const
+Tiq::Tree::detail::ValuesCollection<K,T,A>* Tiq::Tree::detail::ValuesCollection<K,T,A>::get_tree() const
 {
 	return const_cast<ValuesCollection<K,T,A>*>(this);
 }
