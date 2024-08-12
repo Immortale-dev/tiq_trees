@@ -3,7 +3,7 @@
 #include "tq_tree.h"
 
 template<class N, class A>
-typename Tiq::Tree::CountTree<N,A>::const_node_ptr_t Tiq::Tree::CountTree<N,A>::find_nth(const_node_ptr_t node, size_t count) const
+typename Tiq::Tree::CountTree<N,A>::node_ptr_t Tiq::Tree::CountTree<N,A>::find_nth(node_ptr_t node, size_t count) const
 {
 	if (node->is_end()) {
 		return node;
@@ -26,13 +26,13 @@ typename Tiq::Tree::CountTree<N,A>::const_node_ptr_t Tiq::Tree::CountTree<N,A>::
 }
 
 template<class N, class A>
-typename Tiq::Tree::CountTree<N,A>::const_node_ptr_t Tiq::Tree::CountTree<N,A>::find_nth(size_t count) const
+typename Tiq::Tree::CountTree<N,A>::node_ptr_t Tiq::Tree::CountTree<N,A>::find_nth(size_t count) const
 {
 	return find_nth(this->root(), count);
 }
 
 template<class N, class A>
-size_t Tiq::Tree::CountTree<N,A>::find_index(const_node_ptr_t node, const_node_ptr_t parent) const
+size_t Tiq::Tree::CountTree<N,A>::find_index(node_ptr_t node, node_ptr_t parent) const
 {
 	size_t count = 0;
 	if (!node->is_end()) {
@@ -55,23 +55,23 @@ size_t Tiq::Tree::CountTree<N,A>::find_index(const_node_ptr_t node, const_node_p
 }
 
 template<class N, class A>
-typename Tiq::Tree::CountTree<N,A>::node_ptr_t Tiq::Tree::CountTree<N,A>::insert_(node_ptr_t node)
+typename Tiq::Tree::CountTree<N,A>::internal_node_ptr_t Tiq::Tree::CountTree<N,A>::insert_(internal_node_ptr_t node)
 {
-	node_ptr_t n = Tree<N,A>::insert_(node);
+	internal_node_ptr_t n = Tree<N,A>::insert_(node);
 	calc_upward(n);
 	return n;
 }
 
 template<class N, class A>
-typename Tiq::Tree::CountTree<N,A>::node_ptr_t Tiq::Tree::CountTree<N,A>::erase_(node_ptr_t node)
+typename Tiq::Tree::CountTree<N,A>::internal_node_ptr_t Tiq::Tree::CountTree<N,A>::erase_(internal_node_ptr_t node)
 {
-	node_ptr_t n = Tree<N,A>::erase_(node);
+	internal_node_ptr_t n = Tree<N,A>::erase_(node);
 	calc_upward(n);
 	return n;
 }
 
 template<class N, class A>
-void Tiq::Tree::CountTree<N,A>::left_rotate(node_ptr_t x)
+void Tiq::Tree::CountTree<N,A>::left_rotate(internal_node_ptr_t x)
 {
 	Tree<N,A>::left_rotate(x);
 	calc_count(x);
@@ -79,7 +79,7 @@ void Tiq::Tree::CountTree<N,A>::left_rotate(node_ptr_t x)
 }
 
 template<class N, class A>
-void Tiq::Tree::CountTree<N,A>::right_rotate(node_ptr_t x)
+void Tiq::Tree::CountTree<N,A>::right_rotate(internal_node_ptr_t x)
 {
 	Tree<N,A>::right_rotate(x);
 	calc_count(x);
@@ -87,7 +87,7 @@ void Tiq::Tree::CountTree<N,A>::right_rotate(node_ptr_t x)
 }
 
 template<class N, class A>
-void Tiq::Tree::CountTree<N,A>::transplant(node_ptr_t u, node_ptr_t v)
+void Tiq::Tree::CountTree<N,A>::transplant(internal_node_ptr_t u, internal_node_ptr_t v)
 {
 	Tree<N,A>::transplant(u, v);
 	if (!v->is_end()) {
@@ -96,7 +96,7 @@ void Tiq::Tree::CountTree<N,A>::transplant(node_ptr_t u, node_ptr_t v)
 }
 
 template<class N, class A>
-void Tiq::Tree::CountTree<N,A>::calc_count(node_ptr_t x)
+void Tiq::Tree::CountTree<N,A>::calc_count(internal_node_ptr_t x)
 {
 	if (x->is_end()) {
 		this->to_public_node(x)->count_ = 0;
@@ -106,7 +106,7 @@ void Tiq::Tree::CountTree<N,A>::calc_count(node_ptr_t x)
 }
 
 template<class N, class A>
-void Tiq::Tree::CountTree<N,A>::calc_upward(node_ptr_t x) {
+void Tiq::Tree::CountTree<N,A>::calc_upward(internal_node_ptr_t x) {
 	do {
 		calc_count(x);
 	} while((x = this->parent_(x)));

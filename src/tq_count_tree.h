@@ -21,24 +21,24 @@ namespace Tiq::Tree {
 	class CountTree : public Tree<N,A> {
 		public:
 			using T = typename N::value_type;
-			using node_ptr_t = InternalNode*;
-			using const_node_ptr_t = N*;
+			using internal_node_ptr_t = InternalNode*;
+			using node_ptr_t = N*;
 
-			const_node_ptr_t find_nth(size_t count) const;
-			const_node_ptr_t find_nth(const_node_ptr_t node, size_t count) const;
-			size_t find_index(const_node_ptr_t node, const_node_ptr_t parent = nullptr) const;
+			node_ptr_t find_nth(size_t count) const;
+			node_ptr_t find_nth(node_ptr_t node, size_t count) const;
+			size_t find_index(node_ptr_t node, node_ptr_t parent = nullptr) const;
 
 		protected:
-			node_ptr_t insert_(node_ptr_t node) override;
-			node_ptr_t erase_(node_ptr_t node) override;
+			internal_node_ptr_t insert_(internal_node_ptr_t node) override;
+			internal_node_ptr_t erase_(internal_node_ptr_t node) override;
 
-			void left_rotate(node_ptr_t x) override;
-			void right_rotate(node_ptr_t x) override;
-			void transplant(node_ptr_t u, node_ptr_t v) override;
-			virtual void calc_count(node_ptr_t x);
+			void left_rotate(internal_node_ptr_t x) override;
+			void right_rotate(internal_node_ptr_t x) override;
+			void transplant(internal_node_ptr_t u, internal_node_ptr_t v) override;
+			virtual void calc_count(internal_node_ptr_t x);
 
 		private:
-			void calc_upward(node_ptr_t x);
+			void calc_upward(internal_node_ptr_t x);
 	};
 }
 

@@ -10,25 +10,25 @@ Tiq::Tree::Tree<N,A>::Tree() : count_(0)
 
 template<class N, class A>
 Tiq::Tree::Tree<N,A>::~Tree() {
-	dfs(root_, [this](node_ptr_t node){
+	dfs(root_, [this](internal_node_ptr_t node){
 		this->delete_node(node);
 	});
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::root() const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::root() const
 {
 	return to_public_node(root_);
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_(node_ptr_t node, comparator_fn_t comp) const
+typename Tiq::Tree::Tree<N,A>::internal_node_ptr_t Tiq::Tree::Tree<N,A>::find_(internal_node_ptr_t node, comparator_fn_t comp) const
 {
 	while(true){
 		if(node->is_end()){
 			return node;
 		}
-		int comp_result = comp(static_cast<const_node_ptr_t>(node)->data());
+		int comp_result = comp(static_cast<node_ptr_t>(node)->data());
 		if (comp_result == 0) {
 			return node;
 		}
@@ -42,19 +42,19 @@ typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_(node_ptr_t
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find(const_node_ptr_t cnode, comparator_fn_t comp) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find(node_ptr_t cnode, comparator_fn_t comp) const
 {
 	return to_public_node(find_(to_internal_node(cnode), comp));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find(comparator_fn_t comp) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find(comparator_fn_t comp) const
 {
 	return to_public_node(find_(root_, comp));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_min_(node_ptr_t node) const
+typename Tiq::Tree::Tree<N,A>::internal_node_ptr_t Tiq::Tree::Tree<N,A>::find_min_(internal_node_ptr_t node) const
 {
 	if(node->is_end()){
 		return node;
@@ -66,21 +66,21 @@ typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_min_(node_p
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_min(const_node_ptr_t cnode) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_min(node_ptr_t cnode) const
 {
-	node_ptr_t node = cnode ? to_internal_node(cnode) : root_;
+	internal_node_ptr_t node = cnode ? to_internal_node(cnode) : root_;
 	return to_public_node(find_min_(node));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_max(const_node_ptr_t cnode) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_max(node_ptr_t cnode) const
 {
-	node_ptr_t node = cnode ? to_internal_node(cnode) : root_;
+	internal_node_ptr_t node = cnode ? to_internal_node(cnode) : root_;
 	return to_public_node(find_max_(node));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_max_(node_ptr_t node) const
+typename Tiq::Tree::Tree<N,A>::internal_node_ptr_t Tiq::Tree::Tree<N,A>::find_max_(internal_node_ptr_t node) const
 {
 	if(node->is_end()){
 		return node;
@@ -92,7 +92,7 @@ typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_max_(node_p
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_next(const_node_ptr_t cnode) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_next(node_ptr_t cnode) const
 {
 	auto x = to_internal_node(cnode);
 	if (x->is_end()) {
@@ -107,7 +107,7 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_next(
 	if (!x->right_->is_end()) {
 		return to_public_node(find_min_(x->right_));
 	}
-	node_ptr_t y = x->parent_;
+	internal_node_ptr_t y = x->parent_;
 	while (y != nullptr && x == y->right_) {
 		x = y;
 		y = y->parent_;
@@ -119,7 +119,7 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_next(
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_prev(const_node_ptr_t cnode) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::find_prev(node_ptr_t cnode) const
 {
 	auto x = to_internal_node(cnode);
 	if (x->is_end()) {
@@ -134,7 +134,7 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_prev(
 	if (!x->left_->is_end()) {
 		return to_public_node(find_max_(x->left_));
 	}
-	node_ptr_t y = x->parent_;
+	internal_node_ptr_t y = x->parent_;
 	while (y != nullptr && x == y->left_) {
 		x = y;
 		y = y->parent_;
@@ -146,25 +146,25 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::find_prev(
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::parent(const_node_ptr_t cnode) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::parent(node_ptr_t cnode) const
 {
 	return to_public_node(cnode->parent_);
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::left(const_node_ptr_t cnode) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::left(node_ptr_t cnode) const
 {
 	return to_public_node(cnode->left_);
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::right(const_node_ptr_t cnode) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::right(node_ptr_t cnode) const
 {
 	return to_public_node(cnode->right_);
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::before(const_node_ptr_t cnode) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::before(node_ptr_t cnode) const
 {
 	if (!cnode) {
 		return to_public_node(begin_);
@@ -172,7 +172,7 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::before(con
 	if (cnode->is_end()) {
 		return cnode;
 	}
-	node_ptr_t node = find_max_(left_(to_internal_node(cnode)));
+	internal_node_ptr_t node = find_max_(left_(to_internal_node(cnode)));
 	if (!node->is_end()) {
 		node = right_(node);
 	}
@@ -180,7 +180,7 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::before(con
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::after(const_node_ptr_t cnode) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::after(node_ptr_t cnode) const
 {
 	if (!cnode) {
 		return end();
@@ -188,7 +188,7 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::after(cons
 	if (cnode->is_end()) {
 		return cnode;
 	}
-	node_ptr_t node = find_min_(right_(to_internal_node(cnode)));
+	internal_node_ptr_t node = find_min_(right_(to_internal_node(cnode)));
 	if (!node->is_end()) {
 		node = left_(node);
 	}
@@ -196,15 +196,15 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::after(cons
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::insert(const_node_ptr_t cnode, T data)
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::insert(node_ptr_t cnode, T data)
 {
 	cnode->data_ = data;
-	node_ptr_t node = to_internal_node(cnode);
+	internal_node_ptr_t node = to_internal_node(cnode);
 	return to_public_node(insert_(node));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::insert_(node_ptr_t node)
+typename Tiq::Tree::Tree<N,A>::internal_node_ptr_t Tiq::Tree::Tree<N,A>::insert_(internal_node_ptr_t node)
 {
 	// If the node is not end, just return as the structure wasn't currupted.
 	if (!node->is_end()) {
@@ -245,20 +245,20 @@ typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::insert_(node_ptr
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::erase(const_node_ptr_t cnode)
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::erase(node_ptr_t cnode)
 {
 	return to_public_node(erase_(to_internal_node(cnode)));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::erase_(node_ptr_t node)
+typename Tiq::Tree::Tree<N,A>::internal_node_ptr_t Tiq::Tree::Tree<N,A>::erase_(internal_node_ptr_t node)
 {
-	node_ptr_t z = node;
+	internal_node_ptr_t z = node;
 	if (z->is_end()) {
 		throw std::logic_error("Cannot erase end node");
 	}
 
-	node_ptr_t x, y = z;
+	internal_node_ptr_t x, y = z;
 	bool y_original_color = y->color_;
 	if (z->left_->is_end()) {
 		if (z->left_ == begin_) {
@@ -318,14 +318,14 @@ size_t Tiq::Tree::Tree<N,A>::size() const
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::begin() const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::begin() const
 {
 	auto node = begin_ == root_ ? begin_ : begin_->parent_;
 	return to_public_node(node);
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::end() const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::end() const
 {
 	return to_public_node(end_);
 }
@@ -334,9 +334,9 @@ typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::end() cons
 
 // rotate left at node x
 template<class N, class A>
-void Tiq::Tree::Tree<N,A>::left_rotate(node_ptr_t x)
+void Tiq::Tree::Tree<N,A>::left_rotate(internal_node_ptr_t x)
 {
-	node_ptr_t y = x->right_;
+	internal_node_ptr_t y = x->right_;
 	x->right_ = y->left_;
 	y->left_->parent_ = x;
 	y->parent_ = x->parent_;
@@ -353,9 +353,9 @@ void Tiq::Tree::Tree<N,A>::left_rotate(node_ptr_t x)
 
 // rotate right at node x
 template<class N, class A>
-void Tiq::Tree::Tree<N,A>::right_rotate(node_ptr_t x)
+void Tiq::Tree::Tree<N,A>::right_rotate(internal_node_ptr_t x)
 {
-	node_ptr_t y = x->left_;
+	internal_node_ptr_t y = x->left_;
 	x->left_ = y->right_;
 	y->right_->parent_ = x;
 	y->parent_ = x->parent_;
@@ -373,9 +373,9 @@ void Tiq::Tree::Tree<N,A>::right_rotate(node_ptr_t x)
 
 // fix the rb tree modified by the delete operation
 template<class N, class A>
-void Tiq::Tree::Tree<N,A>::fix_delete(node_ptr_t x)
+void Tiq::Tree::Tree<N,A>::fix_delete(internal_node_ptr_t x)
 {
-	node_ptr_t s;
+	internal_node_ptr_t s;
 	while (x != root_ && x->color_ == 0) {
 		if (x == x->parent_->left_) {
 			s = x->parent_->right_;
@@ -440,7 +440,7 @@ void Tiq::Tree::Tree<N,A>::fix_delete(node_ptr_t x)
 }
 
 template<class N, class A>
-void Tiq::Tree::Tree<N,A>::transplant(node_ptr_t u, node_ptr_t v)
+void Tiq::Tree::Tree<N,A>::transplant(internal_node_ptr_t u, internal_node_ptr_t v)
 {
 	if (u->parent_ == nullptr) {
 		root_ = v;
@@ -453,37 +453,37 @@ void Tiq::Tree::Tree<N,A>::transplant(node_ptr_t u, node_ptr_t v)
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::left_(node_ptr_t x) const
+typename Tiq::Tree::Tree<N,A>::internal_node_ptr_t Tiq::Tree::Tree<N,A>::left_(internal_node_ptr_t x) const
 {
 	return x->left_;
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::right_(node_ptr_t x) const
+typename Tiq::Tree::Tree<N,A>::internal_node_ptr_t Tiq::Tree::Tree<N,A>::right_(internal_node_ptr_t x) const
 {
 	return x->right_;
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::parent_(node_ptr_t x) const
+typename Tiq::Tree::Tree<N,A>::internal_node_ptr_t Tiq::Tree::Tree<N,A>::parent_(internal_node_ptr_t x) const
 {
 	return x->parent_;
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::const_node_ptr_t Tiq::Tree::Tree<N,A>::to_public_node(node_ptr_t node) const
+typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::to_public_node(internal_node_ptr_t node) const
 {
-	return const_cast<const_node_ptr_t>(static_cast<N*>(node));
+	return const_cast<node_ptr_t>(static_cast<N*>(node));
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::to_internal_node(const_node_ptr_t node) const
+typename Tiq::Tree::Tree<N,A>::internal_node_ptr_t Tiq::Tree::Tree<N,A>::to_internal_node(node_ptr_t node) const
 {
-	return const_cast<node_ptr_t>(static_cast<typename std::add_const<node_ptr_t>::type>(node));
+	return const_cast<internal_node_ptr_t>(static_cast<typename std::add_const<internal_node_ptr_t>::type>(node));
 }
 
 template<class N, class A>
-void Tiq::Tree::Tree<N,A>::dfs(node_ptr_t node, std::function<void(node_ptr_t)> fn)
+void Tiq::Tree::Tree<N,A>::dfs(internal_node_ptr_t node, std::function<void(internal_node_ptr_t)> fn)
 {
 	if(!node->is_end()){
 		dfs(node->left_, fn);
@@ -495,7 +495,7 @@ void Tiq::Tree::Tree<N,A>::dfs(node_ptr_t node, std::function<void(node_ptr_t)> 
 template<class N, class A>
 void Tiq::Tree::Tree<N,A>::clear()
 {
-	dfs(root_, [this](node_ptr_t node){
+	dfs(root_, [this](internal_node_ptr_t node){
 		this->delete_node(node);
 	});
 	root_ = begin_ = end_ = create_empty_node();
@@ -504,9 +504,9 @@ void Tiq::Tree::Tree<N,A>::clear()
 
 // fix the red-black tree
 template<class N, class A>
-void Tiq::Tree::Tree<N,A>::fix_insert(node_ptr_t k)
+void Tiq::Tree::Tree<N,A>::fix_insert(internal_node_ptr_t k)
 {
-	node_ptr_t u;
+	internal_node_ptr_t u;
 	while (k->parent_->color_ == 1) {
 		if (k->parent_ == k->parent_->parent_->right_) {
 			u = k->parent_->parent_->left_; // uncle
@@ -556,15 +556,15 @@ void Tiq::Tree::Tree<N,A>::fix_insert(node_ptr_t k)
 }
 
 template<class N, class A>
-typename Tiq::Tree::Tree<N,A>::node_ptr_t Tiq::Tree::Tree<N,A>::create_empty_node()
+typename Tiq::Tree::Tree<N,A>::internal_node_ptr_t Tiq::Tree::Tree<N,A>::create_empty_node()
 {
-	const_node_ptr_t node = std::allocator_traits<A>::allocate(alloc_, 1);
+	node_ptr_t node = std::allocator_traits<A>::allocate(alloc_, 1);
 	std::allocator_traits<A>::construct(alloc_, node);
 	return node;
 }
 
 template<class N, class A>
-void Tiq::Tree::Tree<N,A>::delete_node(node_ptr_t node)
+void Tiq::Tree::Tree<N,A>::delete_node(internal_node_ptr_t node)
 {
 	std::allocator_traits<A>::destroy(alloc_, node);
 	std::allocator_traits<A>::deallocate(alloc_, static_cast<N*>(node), 1);

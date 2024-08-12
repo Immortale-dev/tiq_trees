@@ -27,12 +27,12 @@ namespace Tiq::Tree {
 
 		template<class T, class N>
 		class BSTree {
-			using const_node_ptr_t = N*;
+			using node_ptr_t = N*;
 			using key_t = typename N::key_t;
 
 			protected:
-				const_node_ptr_t bs_find(key_t key) const;
-				const_node_ptr_t bs_find_floor(key_t) const;
+				node_ptr_t bs_find(key_t key) const;
+				node_ptr_t bs_find_floor(key_t) const;
 				virtual T* get_tree() const = 0;
 		};
 
@@ -46,8 +46,8 @@ namespace Tiq::Tree {
 		class LayersCollection : public CountTree<LayersCollectionNode<K,T>,A>, public BSTree<LayersCollection<K,T,A>, LayersCollectionNode<K,T>> {
 			public:
 				using public_node_t = LayersCollectionNode<K,T>;
-				using node_ptr_t = InternalNode*;
-				using const_node_ptr_t = public_node_t*;
+				using internal_node_ptr_t = InternalNode*;
+				using node_ptr_t = public_node_t*;
 				using value_t = typename public_node_t::value_t;
 				using key_t = K;
 
@@ -59,7 +59,7 @@ namespace Tiq::Tree {
 				value_t count(key_t key) const;
 
 			protected:
-				void calc_count(node_ptr_t x) override;
+				void calc_count(internal_node_ptr_t x) override;
 				LayersCollection<K,T,A>* get_tree() const override;
 		};
 
@@ -73,8 +73,8 @@ namespace Tiq::Tree {
 		class ValuesCollection : public Tree<ValuesCollectionNode<K,T>,A>, public BSTree<ValuesCollection<K,T,A>, ValuesCollectionNode<K,T>> {
 			public:
 				using public_node_t = ValuesCollectionNode<K,T>;
-				using node_ptr_t = InternalNode*;
-				using const_node_ptr_t = public_node_t*;
+				using internal_node_ptr_t = InternalNode*;
+				using node_ptr_t = public_node_t*;
 				using value_t = typename public_node_t::value_t;
 				using key_t = K;
 
@@ -135,49 +135,49 @@ namespace Tiq::Tree {
 
 	template<class N, class A = std::allocator<N>>
 	class BranchTree : public CountTree<N, A> {
-		using value_type = typename N::value_type;
-		using node_ptr_t = InternalNode*;
-		using const_node_ptr_t = N*;
-		using branch_type = typename N::branch_type;
-		using comparator_fn_t = std::function<int(const value_type&)>;
-
 		public:
-			const_node_ptr_t insert(const_node_ptr_t node, value_type data, branch_type key);
-			const_node_ptr_t erase(const_node_ptr_t node);
-			const_node_ptr_t erase(const_node_ptr_t node, branch_type key, bool remove = false);
-			const_node_ptr_t remove(const_node_ptr_t node, branch_type key);
-			const_node_ptr_t remove(const_node_ptr_t node);
-			const_node_ptr_t find(comparator_fn_t comp) const;
-			const_node_ptr_t find(const_node_ptr_t node, comparator_fn_t comp) const;
-			const_node_ptr_t find_min(const_node_ptr_t node = nullptr) const;
-			const_node_ptr_t find_max(const_node_ptr_t node = nullptr) const;
-			const_node_ptr_t find_min(const_node_ptr_t node, branch_type key) const;
-			const_node_ptr_t find_max(const_node_ptr_t node, branch_type key) const;
-			const_node_ptr_t find_min(branch_type key) const;
-			const_node_ptr_t find_max(branch_type key) const;
-			const_node_ptr_t find_next(const_node_ptr_t node) const;
-			const_node_ptr_t find_prev(const_node_ptr_t node) const;
-			const_node_ptr_t find_next(const_node_ptr_t node, branch_type key) const;
-			const_node_ptr_t find_prev(const_node_ptr_t node, branch_type key) const;
-			const_node_ptr_t find_nth(const_node_ptr_t node, size_t count) const;
-			const_node_ptr_t find_nth(size_t count) const;
-			const_node_ptr_t find_nth(const_node_ptr_t node, size_t count, branch_type key) const;
-			const_node_ptr_t find_nth(size_t count, branch_type key) const;
-			size_t find_index(const_node_ptr_t node, const_node_ptr_t parent = nullptr) const;
-			size_t find_index(const_node_ptr_t node, const_node_ptr_t parent, branch_type key) const;
-			size_t find_index(const_node_ptr_t node, branch_type key) const;
+			using value_type = typename N::value_type;
+			using internal_node_ptr_t = InternalNode*;
+			using node_ptr_t = N*;
+			using branch_type = typename N::branch_type;
+			using comparator_fn_t = std::function<int(const value_type&)>;
+
+			node_ptr_t insert(node_ptr_t node, value_type data, branch_type key);
+			node_ptr_t erase(node_ptr_t node);
+			node_ptr_t erase(node_ptr_t node, branch_type key, bool remove = false);
+			node_ptr_t remove(node_ptr_t node, branch_type key);
+			node_ptr_t remove(node_ptr_t node);
+			node_ptr_t find(comparator_fn_t comp) const;
+			node_ptr_t find(node_ptr_t node, comparator_fn_t comp) const;
+			node_ptr_t find_min(node_ptr_t node = nullptr) const;
+			node_ptr_t find_max(node_ptr_t node = nullptr) const;
+			node_ptr_t find_min(node_ptr_t node, branch_type key) const;
+			node_ptr_t find_max(node_ptr_t node, branch_type key) const;
+			node_ptr_t find_min(branch_type key) const;
+			node_ptr_t find_max(branch_type key) const;
+			node_ptr_t find_next(node_ptr_t node) const;
+			node_ptr_t find_prev(node_ptr_t node) const;
+			node_ptr_t find_next(node_ptr_t node, branch_type key) const;
+			node_ptr_t find_prev(node_ptr_t node, branch_type key) const;
+			node_ptr_t find_nth(node_ptr_t node, size_t count) const;
+			node_ptr_t find_nth(size_t count) const;
+			node_ptr_t find_nth(node_ptr_t node, size_t count, branch_type key) const;
+			node_ptr_t find_nth(size_t count, branch_type key) const;
+			size_t find_index(node_ptr_t node, node_ptr_t parent = nullptr) const;
+			size_t find_index(node_ptr_t node, node_ptr_t parent, branch_type key) const;
+			size_t find_index(node_ptr_t node, branch_type key) const;
 			size_t size() const;
 			size_t size(branch_type key) const;
 
 		protected:
-			void left_rotate(node_ptr_t x) override;
-			void right_rotate(node_ptr_t x) override;
-			void transplant(node_ptr_t u, node_ptr_t v) override;
+			void left_rotate(internal_node_ptr_t x) override;
+			void right_rotate(internal_node_ptr_t x) override;
+			void transplant(internal_node_ptr_t u, internal_node_ptr_t v) override;
 
 		private:
-			void upward_layer_count_update(node_ptr_t node, branch_type key);
-			void layer_count_update(node_ptr_t node, branch_type key);
-			void wide_count_update(node_ptr_t node);
+			void upward_layer_count_update(internal_node_ptr_t node, branch_type key);
+			void layer_count_update(internal_node_ptr_t node, branch_type key);
+			void wide_count_update(internal_node_ptr_t node);
 	};
 }
 

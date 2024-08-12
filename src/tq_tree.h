@@ -7,16 +7,16 @@
 namespace Tiq::Tree {
 	class InternalNode {
 		template<class N, class A> friend class Tree;
-		using node_ptr_t = InternalNode*;
+		using internal_node_ptr_t = InternalNode*;
 
 		public:
 			virtual ~InternalNode(){}
 			bool is_end() const { return is_end_; }
 
 		protected:
-			node_ptr_t parent_ = nullptr;
-			node_ptr_t left_ = nullptr;
-			node_ptr_t right_ = nullptr;
+			internal_node_ptr_t parent_ = nullptr;
+			internal_node_ptr_t left_ = nullptr;
+			internal_node_ptr_t right_ = nullptr;
 
 		private:
 			bool color_ = 0;
@@ -39,8 +39,8 @@ namespace Tiq::Tree {
 	class Tree {
 		public:
 			using T = typename N::value_type;
-			using node_ptr_t = InternalNode*;
-			using const_node_ptr_t = N*;
+			using internal_node_ptr_t = InternalNode*;
+			using node_ptr_t = N*;
 			using comparator_fn_t = std::function<int(const T&)>;
 
 			Tree();
@@ -48,56 +48,56 @@ namespace Tiq::Tree {
 			Tree(const Tree&) = delete;
 			Tree& operator=(const Tree&) = delete;
 
-			const_node_ptr_t root() const;
-			const_node_ptr_t begin() const;
-			const_node_ptr_t end() const;
+			node_ptr_t root() const;
+			node_ptr_t begin() const;
+			node_ptr_t end() const;
 
-			const_node_ptr_t find(comparator_fn_t comp) const;
-			const_node_ptr_t find(const_node_ptr_t node, comparator_fn_t comp) const;
-			const_node_ptr_t find_min(const_node_ptr_t node = nullptr) const;
-			const_node_ptr_t find_max(const_node_ptr_t node = nullptr) const;
-			const_node_ptr_t find_next(const_node_ptr_t node) const;
-			const_node_ptr_t find_prev(const_node_ptr_t node) const;
-			const_node_ptr_t parent(const_node_ptr_t node) const;
-			const_node_ptr_t left(const_node_ptr_t node) const;
-			const_node_ptr_t right(const_node_ptr_t node) const;
-			const_node_ptr_t before(const_node_ptr_t node = nullptr) const;
-			const_node_ptr_t after(const_node_ptr_t node = nullptr) const;
-			const_node_ptr_t insert(const_node_ptr_t node, T data);
-			const_node_ptr_t erase(const_node_ptr_t node);
+			node_ptr_t find(comparator_fn_t comp) const;
+			node_ptr_t find(node_ptr_t node, comparator_fn_t comp) const;
+			node_ptr_t find_min(node_ptr_t node = nullptr) const;
+			node_ptr_t find_max(node_ptr_t node = nullptr) const;
+			node_ptr_t find_next(node_ptr_t node) const;
+			node_ptr_t find_prev(node_ptr_t node) const;
+			node_ptr_t parent(node_ptr_t node) const;
+			node_ptr_t left(node_ptr_t node) const;
+			node_ptr_t right(node_ptr_t node) const;
+			node_ptr_t before(node_ptr_t node = nullptr) const;
+			node_ptr_t after(node_ptr_t node = nullptr) const;
+			node_ptr_t insert(node_ptr_t node, T data);
+			node_ptr_t erase(node_ptr_t node);
 			void clear();
 			size_t size() const;
 
 		protected:
-			virtual node_ptr_t find_(node_ptr_t node, comparator_fn_t comp) const;
-			virtual node_ptr_t find_min_(node_ptr_t node) const;
-			virtual node_ptr_t find_max_(node_ptr_t node) const;
-			virtual node_ptr_t insert_(node_ptr_t node);
-			virtual node_ptr_t erase_(node_ptr_t node);
+			virtual internal_node_ptr_t find_(internal_node_ptr_t node, comparator_fn_t comp) const;
+			virtual internal_node_ptr_t find_min_(internal_node_ptr_t node) const;
+			virtual internal_node_ptr_t find_max_(internal_node_ptr_t node) const;
+			virtual internal_node_ptr_t insert_(internal_node_ptr_t node);
+			virtual internal_node_ptr_t erase_(internal_node_ptr_t node);
 
-			virtual void left_rotate(node_ptr_t x);
-			virtual void right_rotate(node_ptr_t x);
-			virtual void transplant(node_ptr_t u, node_ptr_t v);
+			virtual void left_rotate(internal_node_ptr_t x);
+			virtual void right_rotate(internal_node_ptr_t x);
+			virtual void transplant(internal_node_ptr_t u, internal_node_ptr_t v);
 
-			node_ptr_t left_(node_ptr_t) const;
-			node_ptr_t right_(node_ptr_t) const;
-			node_ptr_t parent_(node_ptr_t) const;
+			internal_node_ptr_t left_(internal_node_ptr_t) const;
+			internal_node_ptr_t right_(internal_node_ptr_t) const;
+			internal_node_ptr_t parent_(internal_node_ptr_t) const;
 
-			const_node_ptr_t to_public_node(node_ptr_t node) const;
-			node_ptr_t to_internal_node(const_node_ptr_t node) const;
-			node_ptr_t create_empty_node();
-			void delete_node(node_ptr_t node);
+			node_ptr_t to_public_node(internal_node_ptr_t node) const;
+			internal_node_ptr_t to_internal_node(node_ptr_t node) const;
+			internal_node_ptr_t create_empty_node();
+			void delete_node(internal_node_ptr_t node);
 
 		private:
-			void fix_delete(node_ptr_t x);
-			void fix_insert(node_ptr_t x);
+			void fix_delete(internal_node_ptr_t x);
+			void fix_insert(internal_node_ptr_t x);
 
-			void dfs(node_ptr_t node, std::function<void(node_ptr_t)> fn);
+			void dfs(internal_node_ptr_t node, std::function<void(internal_node_ptr_t)> fn);
 
 			size_t count_;
-			node_ptr_t root_;
-			node_ptr_t begin_;
-			node_ptr_t end_;
+			internal_node_ptr_t root_;
+			internal_node_ptr_t begin_;
+			internal_node_ptr_t end_;
 
 			A alloc_;
 	};
