@@ -4,8 +4,8 @@
 #include "tq_count_tree.h"
 
 namespace TEST_COUNT {
-	using Node = Tiq::Tree::CountNode<int>;
-	using MyTree = Tiq::Tree::CountTree<Node>;
+	using Node = tiq::tree::CountNode<int>;
+	using MyTree = tiq::tree::CountTree<Node>;
 
 	std::vector<Node*> get_nodes(MyTree* tree) {
 		std::vector<Node*> res;
@@ -46,7 +46,7 @@ SCENARIO_START
 
 using namespace TEST_COUNT;
 
-DESCRIBE("Tiq::Tree::CountTree", {
+DESCRIBE("tiq::tree::CountTree", {
 
 	DESCRIBE("init the tree", {
 		MyTree* ct;

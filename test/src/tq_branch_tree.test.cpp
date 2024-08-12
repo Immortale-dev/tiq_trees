@@ -3,10 +3,10 @@
 #include "tq_branch_tree.h"
 
 namespace TEST_BRANCH {
-	using Node = Tiq::Tree::BranchNode<int, int>;
-	using MyTree = Tiq::Tree::BranchTree<Node>;
-	using CollectionTree = Tiq::Tree::detail::LayersCollection<int>;
-	using ValueTree = Tiq::Tree::detail::ValuesCollection<int,int>;
+	using Node = tiq::tree::BranchNode<int, int>;
+	using MyTree = tiq::tree::BranchTree<Node>;
+	using CollectionTree = tiq::tree::detail::LayersCollection<int>;
+	using ValueTree = tiq::tree::detail::ValuesCollection<int,int>;
 
 	std::vector<Node*> get_nodes(MyTree* tree) {
 		std::vector<Node*> res;
@@ -47,7 +47,7 @@ SCENARIO_START
 
 using namespace TEST_BRANCH;
 
-DESCRIBE("Tiq::Tree::LayersCollection", {
+DESCRIBE("tiq::tree::detail::LayersCollection", {
 	DESCRIBE("init tree", {
 		CollectionTree* tree;
 		BEFORE_EACH({
@@ -156,7 +156,7 @@ DESCRIBE("Tiq::Tree::LayersCollection", {
 	});
 });
 
-DESCRIBE("Tiq::Tree::ValuesCollection", {
+DESCRIBE("tiq::tree::detail::ValuesCollection", {
 	DESCRIBE("init tree", {
 		ValueTree* tree;
 		BEFORE_EACH({
@@ -283,7 +283,7 @@ DESCRIBE("Tiq::Tree::ValuesCollection", {
 	});
 });
 
-DESCRIBE("Tiq::Tree::BranchTree", {
+DESCRIBE("tiq::tree::BranchTree", {
 	DESCRIBE("init the tree", {
 		MyTree* tree;
 		BEFORE_EACH({

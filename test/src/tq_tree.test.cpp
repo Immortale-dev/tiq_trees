@@ -29,14 +29,14 @@ namespace TEST {
 		    }
 	};
 
-	class MyNode : public Tiq::Tree::Node<int> {
+	class MyNode : public tiq::tree::Node<int> {
 		public:
 			using value_type = int;
 	};
 
 	using node_t = MyNode;
 
-	using MyTree = Tiq::Tree::Tree<node_t, MyAllocator<node_t>>;
+	using MyTree = tiq::tree::Tree<node_t, MyAllocator<node_t>>;
 
 	template<typename T>
 	struct bs_find {
@@ -67,7 +67,7 @@ SCENARIO_START
 
 using namespace TEST;
 
-DESCRIBE("Tiq::Tree::Tree", {
+DESCRIBE("tiq::tree::Tree", {
 	DESCRIBE("Initialize with int template parameter", {
 		MyTree* tree;
 		BEFORE_EACH({

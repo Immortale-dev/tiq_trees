@@ -4,7 +4,7 @@
 #include <functional>
 #include <type_traits>
 
-namespace Tiq::Tree {
+namespace tiq::tree {
 	class InternalNode {
 		template<class N, class A> friend class Tree;
 		using internal_node_ptr_t = InternalNode*;
@@ -101,7 +101,7 @@ namespace Tiq::Tree {
 
 			A alloc_;
 	};
-} // namespace Tiq::Tree
+} // namespace tiq::tree
 
 #include "tq_tree.hpp"
 

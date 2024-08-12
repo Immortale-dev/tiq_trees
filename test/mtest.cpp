@@ -4,8 +4,8 @@
 
 int main() {
 
-	using Node = Tiq::Tree::CountNode<int>;
-	Tiq::Tree::CountTree<Node> t;
+	using Node = tiq::tree::CountNode<int>;
+	tiq::tree::CountTree<Node> t;
 
 	t.insert(t.root(), 5);
 	t.insert(t.left(t.root()), 7);

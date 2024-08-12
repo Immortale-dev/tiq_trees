@@ -5,7 +5,7 @@
 
 #include "tq_tree.h"
 
-namespace Tiq::Tree {
+namespace tiq::tree {
 	template<class T>
 	class CountNode : public Node<T> {
 		template<class N, class A> friend class CountTree;
@@ -40,7 +40,7 @@ namespace Tiq::Tree {
 		private:
 			void calc_upward(internal_node_ptr_t x);
 	};
-}
+} // namespace tiq::tree
 
 #include "tq_count_tree.hpp"
 

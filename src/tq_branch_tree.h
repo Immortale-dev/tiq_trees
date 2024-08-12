@@ -12,7 +12,7 @@
 #include "tq_tree.h"
 #include "tq_count_tree.h"
 
-namespace Tiq::Tree {
+namespace tiq::tree {
 	namespace detail {
 		template<class K>
 		class KeyedNode {
@@ -89,7 +89,7 @@ namespace Tiq::Tree {
 			protected:
 				ValuesCollection<K,T,A>* get_tree() const override;
 		};
-	}
+	} // namespace tiq::tree::detail
 
 	template<class K, class T>
 	class BranchNode : public CountNode<T> {
@@ -179,7 +179,7 @@ namespace Tiq::Tree {
 			void layer_count_update(internal_node_ptr_t node, branch_type key);
 			void wide_count_update(internal_node_ptr_t node);
 	};
-}
+} // namespace tiq::tree
 
 #include "tq_branch_tree.hpp"
 
