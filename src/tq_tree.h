@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <type_traits>
+#include <optional>
 
 namespace tiq::tree {
 	class InternalNode {
@@ -29,10 +30,10 @@ namespace tiq::tree {
 		public:
 			using value_type = T;
 
-			const T& data() const { return data_; }
+			const T& data() const { return data_.value(); }
 
 		protected:
-			T data_ = {};
+			std::optional<T> data_;
 	};
 
 	template<class N, class A = std::allocator<N>>
