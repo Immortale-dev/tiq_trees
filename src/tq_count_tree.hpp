@@ -3,21 +3,21 @@
 #include "tq_tree.h"
 
 template<class N, class A>
-typename tiq::tree::CountTree<N,A>::node_ptr_t tiq::tree::CountTree<N,A>::find_nth(node_ptr_t node, size_t count) const
+typename tiq::tree::CountTree<N,A>::node_ptr_t tiq::tree::CountTree<N,A>::find_nth(node_ptr_t node, size_t index) const
 {
 	if (node->is_end()) {
 		return node;
 	}
-	if (node->count() <= count) {
+	if (node->count() <= index) {
 		return this->right(this->find_max(node));
 	}
 	while(true) {
 		size_t left_count = this->left(node)->count();
-		if (left_count == count) {
+		if (left_count == index) {
 			return node;
 		}
-		if (left_count < count) {
-			count -= left_count + 1; // + current node.
+		if (left_count < index) {
+			index -= left_count + 1; // + current node.
 			node = this->right(node);
 		} else {
 			node = this->left(node);
@@ -26,9 +26,9 @@ typename tiq::tree::CountTree<N,A>::node_ptr_t tiq::tree::CountTree<N,A>::find_n
 }
 
 template<class N, class A>
-typename tiq::tree::CountTree<N,A>::node_ptr_t tiq::tree::CountTree<N,A>::find_nth(size_t count) const
+typename tiq::tree::CountTree<N,A>::node_ptr_t tiq::tree::CountTree<N,A>::find_nth(size_t index) const
 {
-	return find_nth(this->root(), count);
+	return find_nth(this->root(), index);
 }
 
 template<class N, class A>

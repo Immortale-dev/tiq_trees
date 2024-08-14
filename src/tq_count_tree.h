@@ -24,8 +24,8 @@ namespace tiq::tree {
 			using internal_node_ptr_t = InternalNode*;
 			using node_ptr_t = N*;
 
-			node_ptr_t find_nth(size_t count) const;
-			node_ptr_t find_nth(node_ptr_t node, size_t count) const;
+			node_ptr_t find_nth(size_t index) const;
+			node_ptr_t find_nth(node_ptr_t node, size_t index) const;
 			size_t find_index(node_ptr_t node, node_ptr_t parent = nullptr) const;
 
 		protected:

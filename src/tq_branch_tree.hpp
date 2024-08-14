@@ -688,35 +688,35 @@ void tiq::tree::BranchTree<N,A>::wide_count_update(internal_node_ptr_t node)
 }
 
 template<class N, class A>
-typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(node_ptr_t node, size_t count) const
+typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(node_ptr_t node, size_t index) const
 {
-	return CountTree<N,A>::find_nth(node, count);
+	return CountTree<N,A>::find_nth(node, index);
 }
 
 template<class N, class A>
-typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(size_t count) const
+typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(size_t index) const
 {
-	return CountTree<N,A>::find_nth(count);
+	return CountTree<N,A>::find_nth(index);
 }
 
 template<class N, class A>
-typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(node_ptr_t node, size_t count, branch_type branch) const
+typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(node_ptr_t node, size_t index, branch_type branch) const
 {
 	if (node->is_end()) {
 		return node;
 	}
-	if (node->count(branch) <= count) {
+	if (node->count(branch) <= index) {
 		return this->right(this->find_max(node));
 	}
 	while(true) {
 		size_t left_count = this->left(node)->count(branch);
-		if (left_count == count && node->has_data(branch)) {
+		if (left_count == index && node->has_data(branch)) {
 			return node;
 		}
-		if (left_count <= count) {
-			count -= left_count;
+		if (left_count <= index) {
+			index -= left_count;
 			if (node->has_data(branch)) {
-				--count;
+				--index;
 			}
 			node = this->right(node);
 		} else {
@@ -726,9 +726,9 @@ typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find
 }
 
 template<class N, class A>
-typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(size_t count, branch_type branch) const
+typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(size_t index, branch_type branch) const
 {
-	return find_nth(this->root(), count, branch);
+	return find_nth(this->root(), index, branch);
 }
 
 template<class N, class A>

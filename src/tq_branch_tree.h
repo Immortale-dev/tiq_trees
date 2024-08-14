@@ -159,10 +159,10 @@ namespace tiq::tree {
 			node_ptr_t find_prev(node_ptr_t node) const;
 			node_ptr_t find_next(node_ptr_t node, branch_type branch) const;
 			node_ptr_t find_prev(node_ptr_t node, branch_type branch) const;
-			node_ptr_t find_nth(node_ptr_t node, size_t count) const;
-			node_ptr_t find_nth(size_t count) const;
-			node_ptr_t find_nth(node_ptr_t node, size_t count, branch_type branch) const;
-			node_ptr_t find_nth(size_t count, branch_type branch) const;
+			node_ptr_t find_nth(node_ptr_t node, size_t index) const;
+			node_ptr_t find_nth(size_t index) const;
+			node_ptr_t find_nth(node_ptr_t node, size_t index, branch_type branch) const;
+			node_ptr_t find_nth(size_t index, branch_type branch) const;
 			size_t find_index(node_ptr_t node, node_ptr_t parent = nullptr) const;
 			size_t find_index(node_ptr_t node, node_ptr_t parent, branch_type branch) const;
 			size_t find_index(node_ptr_t node, branch_type branch) const;
