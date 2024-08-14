@@ -894,7 +894,7 @@ DESCRIBE("tiq::tree::BranchTree", {
 								auto b = tree->begin();
 								int ind = 0;
 								while (!b->is_end()) {
-									EXPECT(b->keys()).toBeIterableEqual(results[ind++]);
+									EXPECT(b->branches()).toBeIterableEqual(results[ind++]);
 									b = tree->find_next(b);
 								}
 							});

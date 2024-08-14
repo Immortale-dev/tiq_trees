@@ -103,25 +103,25 @@ namespace tiq::tree {
 			};
 
 			using CountNode<value_type>::count;
-			size_t count(branch_type key) const;
+			size_t count(branch_type branch) const;
 			const value_type& data() const;
-			const value_type& data(branch_type key) const;
+			const value_type& data(branch_type branch) const;
 			bool has_branch_begin() const;
 			bool has_branch_end() const;
-			bool is_branch_begin(branch_type key) const;
-			bool is_branch_end(branch_type key) const;
-			bool has_branch(branch_type key) const;
+			bool is_branch_begin(branch_type branch) const;
+			bool is_branch_end(branch_type granch) const;
+			bool has_branch(branch_type branch) const;
 			bool has_data() const;
-			bool has_data(branch_type key) const;
+			bool has_data(branch_type branch) const;
 			const branch_type* branch_begin() const;
 			const branch_type* branch_end() const;
 			size_t size() const;
-			BranchVector keys() const;
+			BranchVector branches() const;
 
 		protected:
-			BranchVector insert_(branch_type key, value_type& value);
-			BranchVector erase_(branch_type key);
-			BranchVector remove_(branch_type key);
+			BranchVector insert_(branch_type branch, value_type& value);
+			BranchVector erase_(branch_type branch);
+			BranchVector remove_(branch_type branch);
 			BranchVector clear_();
 			BranchRange get_range() const;
 			BranchVector merge_ranges(BranchRange r1, BranchRange r2) const;
@@ -142,32 +142,32 @@ namespace tiq::tree {
 			using branch_type = typename N::branch_type;
 			using comparator_fn_t = std::function<int(const value_type&)>;
 
-			node_ptr_t insert(node_ptr_t node, value_type data, branch_type key);
+			node_ptr_t insert(node_ptr_t node, value_type data, branch_type branch);
 			node_ptr_t erase(node_ptr_t node);
-			node_ptr_t erase(node_ptr_t node, branch_type key, bool remove = false);
-			node_ptr_t remove(node_ptr_t node, branch_type key);
+			node_ptr_t erase(node_ptr_t node, branch_type branch, bool remove = false);
+			node_ptr_t remove(node_ptr_t node, branch_type branch);
 			node_ptr_t remove(node_ptr_t node);
 			node_ptr_t find(comparator_fn_t comp) const;
 			node_ptr_t find(node_ptr_t node, comparator_fn_t comp) const;
 			node_ptr_t find_min(node_ptr_t node = nullptr) const;
 			node_ptr_t find_max(node_ptr_t node = nullptr) const;
-			node_ptr_t find_min(node_ptr_t node, branch_type key) const;
-			node_ptr_t find_max(node_ptr_t node, branch_type key) const;
-			node_ptr_t find_min(branch_type key) const;
-			node_ptr_t find_max(branch_type key) const;
+			node_ptr_t find_min(node_ptr_t node, branch_type branch) const;
+			node_ptr_t find_max(node_ptr_t node, branch_type branch) const;
+			node_ptr_t find_min(branch_type branch) const;
+			node_ptr_t find_max(branch_type branch) const;
 			node_ptr_t find_next(node_ptr_t node) const;
 			node_ptr_t find_prev(node_ptr_t node) const;
-			node_ptr_t find_next(node_ptr_t node, branch_type key) const;
-			node_ptr_t find_prev(node_ptr_t node, branch_type key) const;
+			node_ptr_t find_next(node_ptr_t node, branch_type branch) const;
+			node_ptr_t find_prev(node_ptr_t node, branch_type branch) const;
 			node_ptr_t find_nth(node_ptr_t node, size_t count) const;
 			node_ptr_t find_nth(size_t count) const;
-			node_ptr_t find_nth(node_ptr_t node, size_t count, branch_type key) const;
-			node_ptr_t find_nth(size_t count, branch_type key) const;
+			node_ptr_t find_nth(node_ptr_t node, size_t count, branch_type branch) const;
+			node_ptr_t find_nth(size_t count, branch_type branch) const;
 			size_t find_index(node_ptr_t node, node_ptr_t parent = nullptr) const;
-			size_t find_index(node_ptr_t node, node_ptr_t parent, branch_type key) const;
-			size_t find_index(node_ptr_t node, branch_type key) const;
+			size_t find_index(node_ptr_t node, node_ptr_t parent, branch_type branch) const;
+			size_t find_index(node_ptr_t node, branch_type branch) const;
 			size_t size() const;
-			size_t size(branch_type key) const;
+			size_t size(branch_type branch) const;
 
 		protected:
 			void left_rotate(internal_node_ptr_t x) override;
@@ -175,8 +175,8 @@ namespace tiq::tree {
 			void transplant(internal_node_ptr_t u, internal_node_ptr_t v) override;
 
 		private:
-			void upward_layer_count_update(internal_node_ptr_t node, branch_type key);
-			void layer_count_update(internal_node_ptr_t node, branch_type key);
+			void upward_layer_count_update(internal_node_ptr_t node, branch_type branch);
+			void layer_count_update(internal_node_ptr_t node, branch_type branch);
 			void wide_count_update(internal_node_ptr_t node);
 	};
 } // namespace tiq::tree
