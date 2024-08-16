@@ -223,6 +223,13 @@ DESCRIBE("tiq::tree::detail::ValuesCollection", {
 				EXPECT(*(tree->get())).toBe(30);
 			});
 
+			IT("should return correct data at", {
+				EXPECT(*tree->at(4)).toBe(8);
+				EXPECT(*tree->at(5)).toBe(10);
+				EXPECT(tree->at(6)).toBe(nullptr);
+				EXPECT(*tree->at(12)).toBe(24);
+			});
+
 			IT("should return correct keys", {
 				std::vector<int> keys;
 				auto b = tree->begin();

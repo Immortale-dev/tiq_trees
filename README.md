@@ -35,11 +35,12 @@ The repository provides C++ implementation of some useful and unique tree data s
 		* [node_ptr_t tiq::tree::CountTree<N,A>::find_nth(size_t count)](#node_ptr_t-tiqtreecounttreenafind_nthsize_t-count)
 		* [node_ptr_t tiq::tree::CountTree<N,A>::find_nth(node_ptr_t node, size_t count)](#node_ptr_t-tiqtreecounttreenafind_nthnode_ptr_t-node-size_t-count)
 		* [size_t tiq::tree::find_index(node_ptr_t node, node_ptr_t parent = nullptr)](#size_t-tiqtreefind_indexnode_ptr_t-node-node_ptr_t-parent--nullptr)
-	* [tiq::tree::BranchNode<K,T>](#tiqtreebranchnodekt)
+	* [class tiq::tree::BranchNode<K,T>](#class-tiqtreebranchnodekt)
 		* [size_t tiq::tree::BranchNode<K,T>::count()](#size_t-tiqtreebranchnodektcount)
 		* [size_t tiq::tree::BranchNode<K,T>::count(branch_type branch)](#size_t-tiqtreebranchnodektcountbranch_type-branch)
 		* [const value_type& tiq::tree::BranchNode<K,T>::data()](#const-value_type-tiqtreebranchnodektdata)
 		* [const value_type& tiq::tree::BranchNode<K,T>::data(branch_type branch)](#const-value_type-tiqtreebranchnodektdatabranch_type-branch)
+		* [const value_type* tiq::tree::BranchNode<K,T>::data_at(branch_type branch)](#const-value_type-tiqtreebranchnodektdata_atbranch_type-branch)
 		* [bool tiq::tree::BranchNode<K,T>::has_branch_begin()](#bool-tiqtreebranchnodekthas_branch_begin)
 		* [bool tiq::tree::BranchNode<K,T>::has_branch_end()](#bool-tiqtreebranchnodekthas_branch_end)
 		* [bool tiq::tree::BranchNode<K,T>::is_branch_begin(branch_type branch)](#bool-tiqtreebranchnodektis_branch_beginbranch_type-branch)
@@ -51,7 +52,7 @@ The repository provides C++ implementation of some useful and unique tree data s
 		* [const branch_type* tiq::tree::BranchNode<K,T>::branch_end()](#const-branch_type-tiqtreebranchnodektbranch_end)
 		* [size_t tiq::tree::BranchNode<K,T>::size()](#size_t-tiqtreebranchnodektsize)
 		* [BranchVector tiq::tree::BranchNode<K,T>::keys()](#branchvector-tiqtreebranchnodektkeys)
-	* [tiq::tree::BranchTree<N,A>](#tiqtreebranchtreena)
+	* [class tiq::tree::BranchTree<N,A>](#class-tiqtreebranchtreena)
 		* [node_ptr_t tiq::tree::BranchTree<N,A>::insert(node_ptr_t node, value_type data, branch_type branch)](#node_ptr_t-tiqtreebranchtreenainsertnode_ptr_t-node-value_type-data-branch_type-branch)
 		* [node_ptr_t tiq::tree::BranchTree<N,A>::remove(node_ptr_t node, branch_type branch)](#node_ptr_t-tiqtreebranchtreenaremovenode_ptr_t-node-branch_type-branch)
 		* [node_ptr_t tiq::tree::BranchTree<N,A>::remove(node_ptr_t node)](#node_ptr_t-tiqtreebranchtreenaremovenode_ptr_t-node)
@@ -405,7 +406,7 @@ Returns **index** of the passed node in the tree (subtree).
 
 ___
 
-### tiq::tree::BranchNode\<K,T\>
+### class tiq::tree::BranchNode\<K,T\>
 
 *(declared in tq_branch_tree.h)*
 
@@ -449,7 +450,7 @@ tree->root()->count(10); // 3
 
 #### const value_type& tiq::tree::BranchNode<K,T>::data()
 
-Returns **held** in the node data *in the highest branch*. If no data held in the node, or the node is an **end node**, the **std::logic_error** is thrown.
+Returns **held** in the node data *in the highest branch*. If no data is held in the node, or the node was erased at any branch, **std::logic_error** is thrown.
 
 #### const value_type& tiq::tree::BranchNode<K,T>::data(branch_type branch)
 
@@ -466,11 +467,15 @@ tree->insert(node, "baz", 3);
 // Erase the node at branch 3
 tree->erase(node, 3);
 
-node->data() // bar
 node->data(1) // foo
 node->data(2) // bar
 node->data(10) // throws std::logic_error as the node was erased at branch 3
+node->data() // throws std::logic_error as the node was erased at branch 3
 ```
+
+#### const value_type* tiq::tree::BranchNode<K,T>::data_at(branch_type branch)
+
+Returns **held** in the node data *exactly at* the passed **branch**, or **nullptr** if there was no data inserted at the **branch**.
 
 #### bool tiq::tree::BranchNode<K,T>::has_branch_begin()
 
@@ -593,7 +598,7 @@ node->keys(); // {1,2,3,4}
 
 ___
 
-### tiq::tree::BranchTree\<N,A\>
+### class tiq::tree::BranchTree\<N,A\>
 
 *(declared in tq_branch_tree.h)*
 

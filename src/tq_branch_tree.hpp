@@ -165,6 +165,18 @@ const typename tiq::tree::detail::ValuesCollection<K,T,A>::value_t* tiq::tree::d
 }
 
 template<class K, class T, class A>
+const typename tiq::tree::detail::ValuesCollection<K,T,A>::value_t* tiq::tree::detail::ValuesCollection<K,T,A>::at(key_t key) const
+{
+	auto node = this->bs_find(key);
+
+	if (node && !node->is_end()) {
+		return &(node->data());
+	}
+
+	return nullptr;
+}
+
+template<class K, class T, class A>
 bool tiq::tree::detail::ValuesCollection<K,T,A>::has(key_t key) const
 {
 	auto node = this->bs_find_floor(key);
@@ -201,16 +213,16 @@ size_t tiq::tree::BranchNode<K,T>::count(branch_type branch) const
 }
 
 template<class K, class T>
+const typename tiq::tree::BranchNode<K,T>::value_type* tiq::tree::BranchNode<K,T>::data_at(branch_type branch) const
+{
+	return inserts_.at(branch);
+}
+
+template<class K, class T>
 const typename tiq::tree::BranchNode<K,T>::value_type& tiq::tree::BranchNode<K,T>::data() const
 {
-	const value_type* value;
-	if (has_branch_end()) {
-		value = inserts_.get(*branch_end());
-	} else {
-		value = inserts_.get();
-	}
-
-	if (!value) {
+	const value_type* value = inserts_.get();
+	if (!value || has_branch_end()) {
 		throw std::logic_error("no data found");
 	}
 	return *value;

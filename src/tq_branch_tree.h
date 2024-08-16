@@ -82,6 +82,7 @@ namespace tiq::tree {
 				void unset(key_t key);
 				const value_t* get(key_t key) const;
 				const value_t* get() const;
+				const value_t* at(key_t key) const;
 				bool has() const;
 				bool has(key_t key) const;
 				bool contains(key_t key) const;
@@ -104,6 +105,7 @@ namespace tiq::tree {
 
 			using CountNode<value_type>::count;
 			size_t count(branch_type branch) const;
+			const value_type* data_at(branch_type branch) const;
 			const value_type& data() const;
 			const value_type& data(branch_type branch) const;
 			bool has_branch_begin() const;
