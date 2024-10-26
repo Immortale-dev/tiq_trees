@@ -441,11 +441,11 @@ typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::eras
 		return this->remove(node, branch);
 	}
 
+	auto keys = node->erase_(branch);
 	if (node->is_end()) {
-		throw std::logic_error("cannot erase end node");
+		this->insert_(node);
 	}
 
-	auto keys = node->erase_(branch);
 	for (auto &k : keys) {
 		upward_layer_count_update(node, k);
 	}

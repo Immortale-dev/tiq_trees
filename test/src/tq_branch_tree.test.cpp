@@ -300,6 +300,17 @@ DESCRIBE("tiq::tree::BranchTree", {
 			delete tree;
 		});
 
+		DESCRIBE("Erase node at the end of the tree", {
+			BEFORE_EACH({
+				tree->erase(tree->end(), 1);
+			});
+
+			IT("should return 1 for include erased size", {
+				EXPECT(tree->size(1)).toBe(0);
+				EXPECT(tree->size(1, true)).toBe(1);
+			});
+		});
+
 		DESCRIBE("Add 10 items with keys from 1 to 10 with different layer to the end of the tree", {
 			BEFORE_EACH({
 				for(int i=1;i<=10;i++){
