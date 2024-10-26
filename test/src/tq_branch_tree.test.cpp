@@ -325,6 +325,12 @@ DESCRIBE("tiq::tree::BranchTree", {
 		});
 
 		DESCRIBE("Add 20 items with complex layer ordering", {
+			/*
+				 1|                  07,08,09,      12,13,14,
+				 2|         04,05,06,                                 18,19,20,
+				 3|01,02,03,                                 15,16,17,
+				10|                           10,11,
+			*/
 			BEFORE_EACH({
 				for(int i=1;i<=3;i++) {
 					tree->insert(tree->find(bs_find(i)), i, 3);
@@ -478,6 +484,11 @@ DESCRIBE("tiq::tree::BranchTree", {
 			});
 
 			DESCRIBE("erase some items", {
+				/*
+					 1|            12,13,14,
+					 3|01,02,03,            15,16,
+					10|         11,
+				*/
 				BEFORE_EACH({
 					for(int i=4;i<=10;i++) {
 						tree->erase(tree->find(bs_find(i)));
@@ -693,6 +704,7 @@ DESCRIBE("tiq::tree::BranchTree", {
 							for(size_t i=0;i<result.size();i++) {
 								EXPECT(tree->find_nth(i,layer)->data(layer)).toBe(result[i]);
 								EXPECT(tree->find_index(tree->find_nth(i,layer), layer)).toBe(i);
+								EXPECT(tree->find_nth(i,layer,true)->data(layer)).toBe(result[i]);
 							}
 							EXPECT(tree->find_nth(result.size(), layer)->is_end()).toBe(true);
 						}
@@ -743,6 +755,14 @@ DESCRIBE("tiq::tree::BranchTree", {
 							EXPECT(tree->size(5)).toBe(4);
 						});
 
+						IT("should give correct size when erased_search is used", {
+							EXPECT(tree->size(1, true)).toBe(0);
+							EXPECT(tree->size(2, true)).toBe(10);
+							EXPECT(tree->size(3, true)).toBe(14);
+							EXPECT(tree->size(4, true)).toBe(15);
+							EXPECT(tree->size(5, true)).toBe(15);
+						});
+
 						IT("should find correct nth item", {
 							std::vector<int> layers{1,2,3,4,5};
 							std::vector<std::vector<int>> results{
@@ -759,24 +779,51 @@ DESCRIBE("tiq::tree::BranchTree", {
 								for(size_t i=0;i<result.size();i++) {
 									EXPECT(tree->find_nth(i,layer)->data(layer)).toBe(result[i]);
 									EXPECT(tree->find_index(tree->find_nth(i,layer), layer)).toBe(i);
+									EXPECT(tree->find_nth(i,layer)->has_data(layer)).toBe(true);
 								}
 								EXPECT(tree->find_nth(result.size(), layer)->is_end()).toBe(true);
 							}
 						});
 
+						IT("should find correct nth item including erased", {
+							std::vector<int> layers{1,2,3,4,5};
+							std::vector<std::vector<int>> results{
+								{},
+								{21,22,23,0,0,0,27,0,0,30},
+								{31,32,0,0,0,0,0,0,39,0,27,0,0,30},
+								{31,32,0,0,0,0,0,0,0,0,0,0,0,49,50},
+								{31,32,0,0,0,0,0,0,0,0,0,0,0,49,50},
+							};
+
+							int l=0;
+							for(auto layer : layers) {
+								auto &result = results[l++];
+								for(size_t i=0;i<result.size();i++) {
+									if (result[i]) {
+										EXPECT(tree->find_nth(i,layer,true)->data(layer)).toBe(result[i]);
+									} else {
+										EXPECT(tree->find_nth(i,layer,true)->is_end()).toBe(false);
+									}
+									EXPECT(tree->find_nth(i,layer,true)->has_data(layer,true)).toBe(true);
+									EXPECT(tree->find_index(tree->find_nth(i,layer,true), layer, true)).toBe(i);
+								}
+								EXPECT(tree->find_nth(result.size(), layer, true)->is_end()).toBe(true);
+							}
+						});
+
 						IT("should correctly get branch range", {
 							std::vector<std::vector<int>> results{
-								{3},{3},{},{2,3},{2,3},{2,3},{},{},{3,4},{},
-								{2,4},{},{},{2},{4},
+								{3},{3},{0,3},{2,3},{2,3},{2,3},{0,2},{0,2},{3,4},{0,2},
+								{2,4},{0,2},{0,2},{2},{4},
 							};
 
 							auto b = tree->begin();
 							int ind = 0;
 							while (!b->is_end()) {
 								auto& res = results[ind++];
-								EXPECT(b->has_branch_begin()).toBe(res.size() > 0);
+								EXPECT(b->has_branch_begin()).toBe(res.size() > 0 && res[0] > 0);
 								EXPECT(b->has_branch_end()).toBe(res.size() > 1);
-								if (res.size() > 0) {
+								if (res.size() > 0 && res[0] > 0) {
 									EXPECT(*b->branch_begin()).toBe(res[0]);
 									EXPECT(b->is_branch_begin(res[0])).toBe(true);
 								} else {
@@ -870,6 +917,14 @@ DESCRIBE("tiq::tree::BranchTree", {
 								EXPECT(tree->size(5)).toBe(18);
 							});
 
+							IT("should contain correct layer sizes when erased search is used", {
+								EXPECT(tree->size(1, true)).toBe(5);
+								EXPECT(tree->size(2, true)).toBe(14);
+								EXPECT(tree->size(3, true)).toBe(18);
+								EXPECT(tree->size(4, true)).toBe(21);
+								EXPECT(tree->size(5, true)).toBe(24);
+							});
+
 							IT("should find correct nth item", {
 								std::vector<int> layers{1,2,3,4,5};
 								std::vector<std::vector<int>> results{
@@ -886,8 +941,53 @@ DESCRIBE("tiq::tree::BranchTree", {
 									for(size_t i=0;i<result.size();i++) {
 										EXPECT(tree->find_nth(i,layer)->data(layer)).toBe(result[i]);
 										EXPECT(tree->find_index(tree->find_nth(i,layer), layer)).toBe(i);
+										EXPECT(tree->find_nth(i,layer)->has_data(layer)).toBe(true);
 									}
 									EXPECT(tree->find_nth(result.size(), layer)->is_end()).toBe(true);
+								}
+							});
+
+							IT("should find correct nth item including erased", {
+								std::vector<int> layers{1,2,3,4,5};
+								std::vector<std::vector<int>> results{
+									{11,12,13,14,15},
+									{11,12,13,14,15,22,23,0,0,0,27,0,0,30},
+									{31,32,0,11,12,13,14,15,22,23,0,0,39,0,27,0,0,30},
+									{31,32,0,11,12,13,14,15,22,41,0,0,41,0,43,44,50,0,0,49,50},
+									{31,32,0,11,12,13,14,15,22,41,0,51,52,60,0,41,0,43,44,50,0,0,49,50},
+								};
+
+								int l=0;
+								for(auto layer : layers) {
+									auto &result = results[l++];
+									for(size_t i=0;i<result.size();i++) {
+										if (result[i]) {
+											EXPECT(tree->find_nth(i,layer,true)->data(layer)).toBe(result[i]);
+										} else {
+											EXPECT(tree->find_nth(i,layer,true)->is_end()).toBe(false);
+										}
+										EXPECT(tree->find_nth(i,layer,true)->has_data(layer,true)).toBe(true);
+										EXPECT(tree->find_index(tree->find_nth(i,layer,true), layer, true)).toBe(i);
+									}
+									EXPECT(tree->find_nth(result.size(), layer, true)->is_end()).toBe(true);
+								}
+							});
+
+							IT("should find correct next/prev items with erased", {
+								std::vector<int> layers{1,2,3,4,5};
+								std::vector<int> results{5,14,18,21,24};
+
+								int l=0;
+								for (auto layer : layers) {
+									size_t result_count = results[l++];
+									auto node = tree->find_min(layer, true);
+									EXPECT(node).toBe(tree->find_nth(0,layer,true));
+									for (size_t i=1;i<result_count;i++) {
+										node = tree->find_next(node, layer, true);
+										EXPECT(tree->find_prev(node, layer, true)).toBe(tree->find_nth(i-1,layer,true));
+										EXPECT(node).toBe(tree->find_nth(i, layer, true));
+									}
+									EXPECT(tree->find_max(layer, true)).toBe(tree->find_nth(result_count-1, layer, true));
 								}
 							});
 
