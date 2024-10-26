@@ -1,3 +1,4 @@
+
 # TIQ Trees
 
 The repository provides C++ implementation of some useful and unique tree data structures.
@@ -37,7 +38,7 @@ The repository provides C++ implementation of some useful and unique tree data s
 		* [size_t tiq::tree::find_index(node_ptr_t node, node_ptr_t parent = nullptr)](#size_t-tiqtreefind_indexnode_ptr_t-node-node_ptr_t-parent--nullptr)
 	* [class tiq::tree::BranchNode<K,T>](#class-tiqtreebranchnodekt)
 		* [size_t tiq::tree::BranchNode<K,T>::count()](#size_t-tiqtreebranchnodektcount)
-		* [size_t tiq::tree::BranchNode<K,T>::count(branch_type branch)](#size_t-tiqtreebranchnodektcountbranch_type-branch)
+		* [size_t tiq::tree::BranchNode<K,T>::count(branch_type branch, bool include_erased=false)](#size_t-tiqtreebranchnodektcountbranch_type-branch-bool-include_erasedfalse)
 		* [const value_type& tiq::tree::BranchNode<K,T>::data()](#const-value_type-tiqtreebranchnodektdata)
 		* [const value_type& tiq::tree::BranchNode<K,T>::data(branch_type branch)](#const-value_type-tiqtreebranchnodektdatabranch_type-branch)
 		* [const value_type* tiq::tree::BranchNode<K,T>::data_at(branch_type branch)](#const-value_type-tiqtreebranchnodektdata_atbranch_type-branch)
@@ -47,7 +48,7 @@ The repository provides C++ implementation of some useful and unique tree data s
 		* [bool tiq::tree::BranchNode<K,T>::is_branch_end(branch_type branch)](#bool-tiqtreebranchnodektis_branch_endbranch_type-branch)
 		* [bool tiq::tree::BranchNode<K,T>::has_branch(branch_type branch)](#bool-tiqtreebranchnodekthas_branchbranch_type-branch)
 		* [bool tiq::tree::BranchNode<K,T>::has_data()](#bool-tiqtreebranchnodekthas_data)
-		* [bool tiq::tree::BranchNode<K,T>::has_data(branch_type branch)](#bool-tiqtreebranchnodekthas_databranch_type-branch)
+		* [bool tiq::tree::BranchNode<K,T>::has_data(branch_type branch, bool include_erased=false)](#bool-tiqtreebranchnodekthas_databranch_type-branch-bool-include_erasedfalse)
 		* [const branch_type* tiq::tree::BranchNode<K,T>::branch_begin()](#const-branch_type-tiqtreebranchnodektbranch_begin)
 		* [const branch_type* tiq::tree::BranchNode<K,T>::branch_end()](#const-branch_type-tiqtreebranchnodektbranch_end)
 		* [size_t tiq::tree::BranchNode<K,T>::size()](#size_t-tiqtreebranchnodektsize)
@@ -58,17 +59,17 @@ The repository provides C++ implementation of some useful and unique tree data s
 		* [node_ptr_t tiq::tree::BranchTree<N,A>::remove(node_ptr_t node)](#node_ptr_t-tiqtreebranchtreenaremovenode_ptr_t-node)
 		* [node_ptr_t tiq::tree::BranchTree<N,A>::erase(node_ptr_t node, branch_type branch, bool remove = false)](#node_ptr_t-tiqtreebranchtreenaerasenode_ptr_t-node-branch_type-branch-bool-remove--false)
 		* [node_ptr_t tiq::tree::BranchTree<N,A>::erase(node_ptr_t node)](#node_ptr_t-tiqtreebranchtreenaerasenode_ptr_t-node)
-		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_min(node_ptr_t node, branch_type branch)](#node_ptr_t-tiqtreebranchtreenafind_minnode_ptr_t-node-branch_type-branch)
-		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_min(branch_type branch)](#node_ptr_t-tiqtreebranchtreenafind_minbranch_type-branch)
-		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_max(node_ptr_t node, branch_type branch)](#node_ptr_t-tiqtreebranchtreenafind_maxnode_ptr_t-node-branch_type-branch)
-		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_max(branch_type branch)](#node_ptr_t-tiqtreebranchtreenafind_maxbranch_type-branch)
-		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_next(node_ptr_t node, branch_type branch)](#node_ptr_t-tiqtreebranchtreenafind_nextnode_ptr_t-node-branch_type-branch)
-		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_prev(node_ptr_t node, branch_type branch)](#node_ptr_t-tiqtreebranchtreenafind_prevnode_ptr_t-node-branch_type-branch)
-		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(node_ptr_t node, size_t index, branch_type branch)](#node_ptr_t-tiqtreebranchtreenafind_nthnode_ptr_t-node-size_t-index-branch_type-branch)
-		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(size_t index, branch_type branch)](#node_ptr_t-tiqtreebranchtreenafind_nthsize_t-index-branch_type-branch)
-		* [size_t tiq::tree::BranchTree<N,A>::find_index(node_ptr_t node, node_ptr_t parent, branch_type branch)](#size_t-tiqtreebranchtreenafind_indexnode_ptr_t-node-node_ptr_t-parent-branch_type-branch)
-		* [size_t tiq::tree::BranchTree<N,A>::find_index(node_ptr_t node, branch_type branch)](#size_t-tiqtreebranchtreenafind_indexnode_ptr_t-node-branch_type-branch)
-		* [size_t tiq::tree::BranchTree<N,A>::size(branch_type branch)](#size_t-tiqtreebranchtreenasizebranch_type-branch)
+		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_min(node_ptr_t node, branch_type branch, bool search_erased=false)](#node_ptr_t-tiqtreebranchtreenafind_minnode_ptr_t-node-branch_type-branch-bool-search_erasedfalse)
+		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_min(branch_type branch, bool search_erased=false)](#node_ptr_t-tiqtreebranchtreenafind_minbranch_type-branch-bool-search_erasedfalse)
+		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_max(node_ptr_t node, branch_type branch, bool search_erased=false)](#node_ptr_t-tiqtreebranchtreenafind_maxnode_ptr_t-node-branch_type-branch-bool-search_erasedfalse)
+		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_max(branch_type branch, bool search_erased=false)](#node_ptr_t-tiqtreebranchtreenafind_maxbranch_type-branch-bool-search_erasedfalse)
+		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_next(node_ptr_t node, branch_type branch, bool search_erased=false)](#node_ptr_t-tiqtreebranchtreenafind_nextnode_ptr_t-node-branch_type-branch-bool-search_erasedfalse)
+		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_prev(node_ptr_t node, branch_type branch, bool search_erased=false)](#node_ptr_t-tiqtreebranchtreenafind_prevnode_ptr_t-node-branch_type-branch-bool-search_erasedfalse)
+		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(node_ptr_t node, size_t index, branch_type branch, bool search_erased=false)](#node_ptr_t-tiqtreebranchtreenafind_nthnode_ptr_t-node-size_t-index-branch_type-branch-bool-search_erasedfalse)
+		* [node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(size_t index, branch_type branch, bool search_erased=false)](#node_ptr_t-tiqtreebranchtreenafind_nthsize_t-index-branch_type-branch-bool-search_erasedfalse)
+		* [size_t tiq::tree::BranchTree<N,A>::find_index(node_ptr_t node, node_ptr_t parent, branch_type branch, bool search_erased=false)](#size_t-tiqtreebranchtreenafind_indexnode_ptr_t-node-node_ptr_t-parent-branch_type-branch-bool-search_erasedfalse)
+		* [size_t tiq::tree::BranchTree<N,A>::find_index(node_ptr_t node, branch_type branch, bool search_erased=false)](#size_t-tiqtreebranchtreenafind_indexnode_ptr_t-node-branch_type-branch-bool-search_erasedfalse)
+		* [size_t tiq::tree::BranchTree<N,A>::size(branch_type branch, bool search_erased=false)](#size_t-tiqtreebranchtreenasizebranch_type-branch-bool-search_erasedfalse)
 * [Tests](#tests)
 * [Additional Information](#additional-information)
 	* [Commands](#commands)
@@ -168,9 +169,9 @@ tiq::tree::Tree<tiq::tree::Node<int>> t;
 // Binary search comparison function
 int find_me = 5;
 auto node = t->find([find_me](node_ptr_t node){
-	if (node->data() == find_me) return 0;
-	if (node->data() > find_me) return -1;
-	return 1;
+        if (node->data() == find_me) return 0;
+        if (node->data() > find_me) return -1;
+        return 1;
 });
 
 std::cout << node->data() << std::endl; // 5
@@ -430,9 +431,9 @@ It exposes **3** public types:
 
 Returns the number of **children nodes** of the current node that hold data **+1** (current node).
 
-#### size_t tiq::tree::BranchNode<K,T>::count(branch_type branch)
+#### size_t tiq::tree::BranchNode<K,T>::count(branch_type branch, bool include_erased=false)
 
-Returns the number of **children nodes** of the current node that hold data in the **branch**, **+1** and if current node holds data in the **branch**.
+Returns the number of **children nodes** of the current node that hold data in the **branch**, **+1** and if current node holds data in the **branch**. If the **include_erased** parameters is set to `true`, also adds the number of erased nodes.
 
 ***Example:***
 
@@ -441,11 +442,13 @@ tiq::tree::BranchTree tree<tiq::tree::BranchNode<string, int>>;
 tree->insert(tree->end(), "foo", 1);
 tree->insert(tree->end(), "bar", 2);
 tree->insert(tree->end(), "baz", 3);
+tree->erase(tree->end(), 3);
 
 tree->root()->count(1); // 1
 tree->root()->count(2); // 2
 tree->root()->count(3); // 3
 tree->root()->count(10); // 3
+tree->root()->count(3,true); // 4
 ```
 
 #### const value_type& tiq::tree::BranchNode<K,T>::data()
@@ -547,9 +550,9 @@ node->has_branch(10); // false
 
 Returns **true** if the node has data at least in one branch.
 
-#### bool tiq::tree::BranchNode<K,T>::has_data(branch_type branch)
+#### bool tiq::tree::BranchNode<K,T>::has_data(branch_type branch, bool include_erased=false)
 
-Accepts one argument **branch**, and returns **true** if the node holds data in the **branch**.
+Accepts **branch** argument that corresponds to a branch you want to investigate, and a *bool* **include_erased** (default to `false`) parameter, and returns **true** if the node holds data in the **branch**, or in case of **include_erased** is `true`, it returns true if the node golds data or holds "erases".
 
 #### const branch_type* tiq::tree::BranchNode<K,T>::branch_begin()
 
@@ -672,9 +675,9 @@ node->data(); // baz
 
 Works exactly as **tiq::tree::BranchTree\<N,A\>::remove(node_ptr_t)**.
 
-#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_min(node_ptr_t node, branch_type branch)
+#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_min(node_ptr_t node, branch_type branch, bool search_erased=false)
 
-Returns the **left most** child of the passed **node** in the passed **branch**. If no corresponding node was found, returns an **end node**.
+Returns the **left most** child of the passed **node** in the passed **branch**. If no corresponding node was found, returns an **end node**. The **search_erased** parameter allows it to search over erased nodes as well.
 
 ***Example:***
 
@@ -689,21 +692,21 @@ Returns the **left most** child of the passed **node** in the passed **branch**.
 tree->find_min(tree->root(), 2)->data(); // 3
 ```
 
-#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_min(branch_type branch)
+#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_min(branch_type branch, bool search_erased=false)
 
-Same as above, with the difference that the scan is performed on a **root** node.
+Same as above, with the difference that the scan is performed on a **root** node. The **search_erased** parameter allows it to search over erased nodes as well.
 
-#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_max(node_ptr_t node, branch_type branch)
+#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_max(node_ptr_t node, branch_type branch, bool search_erased=false)
 
-Returns the **right most** child of the passed **node** in the passed **branch**. If no corresponding node was found, returns an **end node**.
+Returns the **right most** child of the passed **node** in the passed **branch**. If no corresponding node was found, returns an **end node**. The **search_erased** parameter allows it to search over erased nodes as well.
 
-#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_max(branch_type branch)
+#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_max(branch_type branch, bool search_erased=false)
 
-Same as above, with the difference that the scan is performed on a **root** node.
+Same as above, with the difference that the scan is performed on a **root** node. The **search_erased** parameter allows it to search over erased nodes as well.
 
-#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_next(node_ptr_t node, branch_type branch)
+#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_next(node_ptr_t node, branch_type branch, bool search_erased=false)
 
-Returns the node that is next to the passed **node**, in the **branch**, or **end node** if the node was not found.
+Returns the node that is next to the passed **node**, in the **branch**, or **end node** if the node was not found. The **search_erased** parameter allows it to search over erased nodes as well.
 
 ***Example:***
 
@@ -721,29 +724,29 @@ tree->find_next(n2, 1)->data(); // 6
 tree->find_next(n2, 2)->data(); // 5
 ```
 
-#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_prev(node_ptr_t node, branch_type branch)
+#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_prev(node_ptr_t node, branch_type branch, bool search_erased=false)
 
-Returns the node that is previous to the passed **node**, in the **branch**, or **end node** if the node was not found.
+Returns the node that is previous to the passed **node**, in the **branch**, or **end node** if the node was not found. The **search_erased** parameter allows it to search over erased nodes as well.
 
-#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_nth(node_ptr_t node, size_t index, branch_type branch)
+#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_nth(node_ptr_t node, size_t index, branch_type branch, bool search_erased=false)
 
-Finds a child node in the given **node** and **branch** which index is equal to the passed **index**. If no node was found, returns **end node**.
+Finds a child node in the given **node** and **branch** which index is equal to the passed **index**. If no node was found, returns **end node**. The **search_erased** parameter allows it to search over erased nodes as well.
 
-#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_nth(size_t index, branch_type branch)
+#### node_ptr_t tiq::tree::BranchTree\<N,A\>::find_nth(size_t index, branch_type branch, bool search_erased=false)
 
-Same as above, but the scan is performed on the **root** node.
+Same as above, but the scan is performed on the **root** node. The **search_erased** parameter allows it to search over erased nodes as well.
 
-#### size_t tiq::tree::BranchTree\<N,A\>::find_index(node_ptr_t node, node_ptr_t parent, branch_type branch)
+#### size_t tiq::tree::BranchTree\<N,A\>::find_index(node_ptr_t node, node_ptr_t parent, branch_type branch, bool search_erased=false)
 
-Returns an index of the passed **node** in the **branch** within the **parent** node.
+Returns an index of the passed **node** in the **branch** within the **parent** node. The **search_erased** parameter allows it to search over erased nodes as well.
 
-#### size_t tiq::tree::BranchTree\<N,A\>::find_index(node_ptr_t node, branch_type branch)
+#### size_t tiq::tree::BranchTree\<N,A\>::find_index(node_ptr_t node, branch_type branch, bool search_erased=false)
 
-Returns an index of the passed **node** in the **branch** within the **root** node.
+Returns an index of the passed **node** in the **branch** within the **root** node. The **search_erased** parameter allows it to search over erased nodes as well.
 
-#### size_t tiq::tree::BranchTree\<N,A\>::size(branch_type branch)
+#### size_t tiq::tree::BranchTree\<N,A\>::size(branch_type branch, bool search_erased=false)
 
-Returns the size of the tree in the given **branch**.
+Returns the size of the tree in the given **branch**. The **search_erased** parameter allows it to search over erased nodes as well.
 
 ## Tests
 
