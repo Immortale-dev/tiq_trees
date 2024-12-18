@@ -75,6 +75,7 @@ namespace tiq::tree {
 			virtual internal_node_ptr_t find_max_(internal_node_ptr_t node) const;
 			virtual internal_node_ptr_t insert_(internal_node_ptr_t node);
 			virtual internal_node_ptr_t erase_(internal_node_ptr_t node);
+			virtual size_t size_() const;
 
 			virtual void left_rotate(internal_node_ptr_t x);
 			virtual void right_rotate(internal_node_ptr_t x);

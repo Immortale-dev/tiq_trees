@@ -312,9 +312,14 @@ typename tiq::tree::Tree<N,A>::internal_node_ptr_t tiq::tree::Tree<N,A>::erase_(
 }
 
 template<class N, class A>
+size_t tiq::tree::Tree<N,A>::size_() const {
+	return count_;
+}
+
+template<class N, class A>
 size_t tiq::tree::Tree<N,A>::size() const
 {
-	return count_;
+	return size_();
 }
 
 template<class N, class A>
