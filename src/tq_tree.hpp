@@ -28,7 +28,7 @@ typename tiq::tree::Tree<N,A>::internal_node_ptr_t tiq::tree::Tree<N,A>::find_(i
 		if(node->is_end()){
 			return node;
 		}
-		int comp_result = comp(static_cast<node_ptr_t>(node)->data());
+		int comp_result = comp(static_cast<node_ptr_t>(node));
 		if (comp_result == 0) {
 			return node;
 		}

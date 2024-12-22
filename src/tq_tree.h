@@ -42,7 +42,7 @@ namespace tiq::tree {
 			using T = typename N::value_type;
 			using internal_node_ptr_t = InternalNode*;
 			using node_ptr_t = N*;
-			using comparator_fn_t = std::function<int(const T&)>;
+			using comparator_fn_t = std::function<int(const node_ptr_t node)>;
 
 			Tree();
 			virtual ~Tree();

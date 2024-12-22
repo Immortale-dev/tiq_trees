@@ -21,9 +21,9 @@ namespace TEST_COUNT {
 	struct bs_find {
 		bs_find(T val): val_(val) {}
 
-		int operator()(const T& n) {
-			if (n == val_) return 0;
-			if (n > val_) return -1;
+		int operator()(const Node* n) {
+			if (n->data() == val_) return 0;
+			if (n->data() > val_) return -1;
 			return 1;
 		}
 

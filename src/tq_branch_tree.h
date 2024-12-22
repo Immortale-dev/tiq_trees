@@ -142,7 +142,7 @@ namespace tiq::tree {
 			using internal_node_ptr_t = InternalNode*;
 			using node_ptr_t = N*;
 			using branch_type = typename N::branch_type;
-			using comparator_fn_t = std::function<int(const value_type&)>;
+			using comparator_fn_t = std::function<int(const node_ptr_t)>;
 
 			node_ptr_t insert(node_ptr_t node, value_type data, branch_type branch);
 			node_ptr_t erase(node_ptr_t node);
