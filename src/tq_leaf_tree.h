@@ -5,7 +5,7 @@
 
 namespace tiq::tree {
 	template<class T>
-	class LeafNode : public Node {
+	class LeafNode : public Node<T> {
 		template<class _N, class _A> friend class LeafTree;
 		public:
 			using value_type = T;
@@ -17,7 +17,7 @@ namespace tiq::tree {
 	};
 
 	template<class N, class A = std::allocator<N>>
-	class LeafTree : public Tree {
+	class LeafTree : public Tree<N,A> {
 		public:
 			using T = typename N::value_type;
 			using internal_node_ptr_t = InternalNode*;
