@@ -211,13 +211,7 @@ typename tiq::tree::Tree<N,A>::internal_node_ptr_t tiq::tree::Tree<N,A>::insert_
 		return node;
 	}
 
-	node->is_end_ = false;
-	node->left_ = create_empty_node();
-	node->right_ = create_empty_node();
-	node->color_ = 1;
-
-	node->left_->parent_ = node;
-	node->right_->parent_ = node;
+	groom_node(node);
 
 	if (begin_ == node) {
 		begin_ = node->left_;
@@ -515,6 +509,7 @@ void tiq::tree::Tree<N,A>::fix_insert(internal_node_ptr_t k)
 	while (k->parent_->color_ == 1) {
 		if (k->parent_ == k->parent_->parent_->right_) {
 			u = k->parent_->parent_->left_; // uncle
+
 			if (u->color_ == 1) {
 				// case 3.1
 				u->color_ = 0;
@@ -573,4 +568,15 @@ void tiq::tree::Tree<N,A>::delete_node(internal_node_ptr_t node)
 {
 	std::allocator_traits<A>::destroy(alloc_, node);
 	std::allocator_traits<A>::deallocate(alloc_, static_cast<N*>(node), 1);
+}
+
+template<class N, class A>
+void tiq::tree::Tree<N,A>::groom_node(internal_node_ptr_t node)
+{
+	node->is_end_ = false;
+	node->left_ = create_empty_node();
+	node->right_ = create_empty_node();
+	node->color_ = 1;
+	node->left_->parent_ = node;
+	node->right_->parent_ = node;
 }

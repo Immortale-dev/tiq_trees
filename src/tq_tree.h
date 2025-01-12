@@ -18,8 +18,6 @@ namespace tiq::tree {
 			internal_node_ptr_t parent_ = nullptr;
 			internal_node_ptr_t left_ = nullptr;
 			internal_node_ptr_t right_ = nullptr;
-
-		private:
 			bool color_ = 0;
 			bool is_end_ = 1;
 	};
@@ -89,11 +87,10 @@ namespace tiq::tree {
 			internal_node_ptr_t to_internal_node(node_ptr_t node) const;
 			internal_node_ptr_t create_empty_node();
 			void delete_node(internal_node_ptr_t node);
+			void groom_node(internal_node_ptr_t node);
 
-		private:
 			void fix_delete(internal_node_ptr_t x);
 			void fix_insert(internal_node_ptr_t x);
-
 			void dfs(internal_node_ptr_t node, std::function<void(internal_node_ptr_t)> fn);
 
 			size_t count_;
@@ -101,6 +98,7 @@ namespace tiq::tree {
 			internal_node_ptr_t begin_;
 			internal_node_ptr_t end_;
 
+		private:
 			A alloc_;
 	};
 } // namespace tiq::tree
