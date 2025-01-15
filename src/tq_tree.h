@@ -14,6 +14,10 @@ namespace tiq::tree {
 			virtual ~InternalNode(){}
 			bool is_end() const { return is_end_; }
 
+			#ifdef DEBUG_TREE_PROPERTIES
+			bool debug_get_color() { return color_; }
+			#endif
+
 		protected:
 			internal_node_ptr_t parent_ = nullptr;
 			internal_node_ptr_t left_ = nullptr;
