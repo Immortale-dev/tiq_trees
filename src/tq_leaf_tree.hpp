@@ -25,6 +25,9 @@ typename tiq::tree::LeafTree<N,A>::internal_node_ptr_t tiq::tree::LeafTree<N,A>:
 	if (!node->is_end()) {
 		return node;
 	}
+
+	this->to_public_node(node)->leaf_ = true;
+
 	if (node == this->root_) {
 		return Tree<N,A>::insert_(node);
 	}
@@ -34,13 +37,14 @@ typename tiq::tree::LeafTree<N,A>::internal_node_ptr_t tiq::tree::LeafTree<N,A>:
 
 	node_ptr_t internal_node = this->to_public_node(this->create_empty_node());
 	internal_node->color_ = parent_color;
-
 	internal_node->left_ = node;
 	internal_node->right_ = parent;
+	internal_node->is_end_ = false;
+
 	if (parent->right_ == node) {
 		std::swap(internal_node->left_, internal_node->right_);
 	}
-	node_ptr_t g_parent = this->to_public_node(parent->parent_);
+	node_ptr_t g_parent = this->parent(parent);
 	if (g_parent) {
 		if (g_parent->left_ == parent) {
 			g_parent->left_ = internal_node;
@@ -52,17 +56,18 @@ typename tiq::tree::LeafTree<N,A>::internal_node_ptr_t tiq::tree::LeafTree<N,A>:
 	}
 	internal_node->parent_ = g_parent;
 
+	auto nil_node = this->to_public_node(this->create_empty_node());
+	nil_node->parent_ = parent;
 	if (parent->left_ == node) {
-		parent->left_ = this->create_empty_node();
+		parent->left_ = nil_node;
 	} else {
-		parent->right_ = this->create_empty_node();
+		parent->right_ = nil_node;
 	}
 	this->to_public_node(node)->parent_ = internal_node;
 	parent->parent_ = internal_node;
 
 	parent->color_ = 1;
 
-	this->to_public_node(node)->leaf_ = true;
 	return Tree<N,A>::insert_(node);
 }
 
