@@ -106,9 +106,10 @@ typename tiq::tree::LeafTree<N,A>::internal_node_ptr_t tiq::tree::LeafTree<N,A>:
 	this->delete_node(z->right_);
 
 	this->transplant(parent, other);
+	bool original_other_color = other->color_;
 	other->color_ = 0;
 
-	if (parent->color_ == 0 && (z->color_ == 0 || other->color_ == 0)) {
+	if (parent->color_ == 0 && original_other_color == 0) {
 		this->fix_delete(other);
 	}
 
