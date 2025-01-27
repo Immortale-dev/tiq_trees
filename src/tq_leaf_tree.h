@@ -1,6 +1,8 @@
 #ifndef TQ_LEAF_TREE_H_
 #define TQ_LEAF_TREE_H_
 
+#include <type_traits>
+
 #include "tq_tree.h"
 
 namespace tiq::tree {

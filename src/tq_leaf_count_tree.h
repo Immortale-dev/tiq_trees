@@ -1,14 +1,14 @@
-#ifndef TQ_COUNT_TREE_H_
-#define TQ_COUNT_TREE_H_
+#ifndef TQ_LEAF_COUNT_TREE_H_
+#define TQ_LEAF_COUNT_TREE_H_
 
 #include <type_traits>
 
-#include "tq_tree.h"
+#include "tq_leaf_tree.h"
 
 namespace tiq::tree {
 	template<class T>
-	class CountNode : public Node<T> {
-		template<class N, class A> friend class CountTree;
+	class LeafCountNode : public LeafNode<T> {
+		template<class _N, class _A> friend class LeafCountTree;
 		public:
 			using value_type = T;
 
@@ -19,7 +19,7 @@ namespace tiq::tree {
 	};
 
 	template<class N, class A = std::allocator<N>>
-	class CountTree : public Tree<N,A> {
+	class LeafCountTree : public LeafTree<N,A> {
 		public:
 			using T = typename N::value_type;
 			using internal_node_ptr_t = InternalNode*;
@@ -43,6 +43,6 @@ namespace tiq::tree {
 	};
 } // namespace tiq::tree
 
-#include "tq_count_tree.hpp"
+#include "tq_leaf_count_tree.hpp"
 
-#endif // TQ_COUNT_TREE_H_
+#endif // TQ_LEAF_COUNT_TREE_H_
