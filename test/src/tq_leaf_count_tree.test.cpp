@@ -22,8 +22,8 @@ namespace TEST_LEAF_COUNT {
 		bs_find(T val): val_(val) {}
 
 		int operator()(const Node* n) {
-			if (n->data() == val_) return 0;
-			if (n->data() > val_) return -1;
+			if (n->is_leaf() && n->data() == val_) return 0;
+			if (n->data() >= val_) return -1;
 			return 1;
 		}
 
@@ -36,9 +36,18 @@ namespace TEST_LEAF_COUNT {
 			callback(node, 0);
 			return 0;
 		}
-		int res = dfs(tree, tree->left(node), callback) + dfs(tree, tree->right(node), callback) + 1;
+		int res = dfs(tree, tree->left(node), callback) + dfs(tree, tree->right(node), callback);
+		if (node->is_leaf()) res++;
 		callback(node, res);
 		return res;
+	}
+
+	int calc_node_counts(MyTree* tree, Node* node, std::vector<std::pair<Node*,int>> &res) {
+		if (node->is_end()) return 0;
+		int r = calc_node_counts(tree, tree->left(node), res) + calc_node_counts(tree, tree->right(node), res);
+		if (node->is_leaf()) r++;
+		res.push_back({node, r});
+		return r;
 	}
 }
 
@@ -69,12 +78,12 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 			});
 
 			IT("should calculate counts correctly", {
-				auto nodes = get_nodes(ct);
+				std::vector<std::pair<Node*,int>> res;
+				calc_node_counts(ct, ct->root(), res);
 
-				std::vector<int> counts(10);
-				std::transform(nodes.begin(), nodes.end(), counts.begin(), [](auto n){ return n->count(); });
-
-				EXPECT(counts).toBeIterableEqual(std::vector<int>{1, 3, 1, 10, 1, 6, 1, 4, 2, 1});
+				for (auto &p : res) {
+					EXPECT(p.first->count()).toBe(p.second);
+				}
 			});
 
 			IT("should assign 0 to leaves count", {
@@ -92,53 +101,68 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 
 			DESCRIBE("erase left subtree", {
 				BEFORE_EACH({
-					ct->erase(ct->find(bs_find(1)));
-					ct->erase(ct->find(bs_find(2)));
-					ct->erase(ct->find(bs_find(3)));
+					ct->erase(ct->begin());
+					ct->erase(ct->begin());
+					ct->erase(ct->begin());
 				});
 
 				IT("should correctly update counts", {
-					auto nodes = get_nodes(ct);
+					std::vector<std::pair<Node*,int>> res;
+					calc_node_counts(ct, ct->root(), res);
 
-					std::vector<int> counts(7);
-					std::transform(nodes.begin(), nodes.end(), counts.begin(), [](auto n){ return n->count(); });
-
-					EXPECT(counts).toBeIterableEqual(std::vector<int>{2, 1, 7, 1, 4, 2, 1});
+					for (auto &p : res) {
+						EXPECT(p.first->count()).toBe(p.second);
+					}
 				});
 			});
 		});
 
-		DESCRIBE_SKIP("Add 10 items in next order: {6,1,8,2,4,5,10,9,7,3}", {
+		DESCRIBE("Add 10 items in next order: {6,1,8,2,4,5,10,9,7,3}", {
 			BEFORE_EACH({
 				std::vector<int> v{6,1,8,2,4,5,10,9,7,3};
 				for(auto it : v){
-					ct->insert(ct->find(bs_find(it)), it);
+					auto node = ct->insert(ct->find(bs_find(it)), it);
+					auto parent = ct->parent(node);
+					if (!parent) continue;
+					ct->insert(parent, ct->left(parent)->data());
 				}
 			});
 
 			IT("should keep counts correctly", {
-				auto nodes = get_nodes(ct);
+				std::vector<std::pair<Node*,int>> res;
+				calc_node_counts(ct, ct->root(), res);
 
-				std::vector<int> counts(10);
-				std::transform(nodes.begin(), nodes.end(), counts.begin(), [](auto n){ return n->count(); });
-
-				EXPECT(counts).toBeIterableEqual(std::vector<int>{1, 5, 1, 3, 1, 10, 1, 2, 4, 1});
+				for (auto &p : res) {
+					EXPECT(p.first->count()).toBe(p.second);
+				}
 			});
 		});
 
-		DESCRIBE_SKIP("Add 100 items in a weird order", {
+		DESCRIBE("Add 100 items in a weird order", {
 			BEFORE_EACH({
 				for(int i=1;i<=20;i++) {
-					ct->insert(ct->find(bs_find(i)), i);
+					auto node = ct->insert(ct->find(bs_find(i)), i);
+					auto parent = ct->parent(node);
+					if (!parent) continue;
+					ct->insert(parent, ct->left(parent)->data());
 				}
 				for(int i=80;i>=41;i--) {
-					ct->insert(ct->find(bs_find(i)), i);
+					auto node = ct->insert(ct->find(bs_find(i)), i);
+					auto parent = ct->parent(node);
+					if (!parent) continue;
+					ct->insert(parent, ct->left(parent)->data());
 				}
 				for(int i=21;i<=40;i++) {
-					ct->insert(ct->find(bs_find(i)), i);
+					auto node = ct->insert(ct->find(bs_find(i)), i);
+					auto parent = ct->parent(node);
+					if (!parent) continue;
+					ct->insert(parent, ct->left(parent)->data());
 				}
 				for(int i=100;i>=81;i--) {
-					ct->insert(ct->find(bs_find(i)), i);
+					auto node = ct->insert(ct->find(bs_find(i)), i);
+					auto parent = ct->parent(node);
+					if (!parent) continue;
+					ct->insert(parent, ct->left(parent)->data());
 				}
 			});
 
@@ -153,7 +177,7 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 				size_t ind = 0;
 				while(!b->is_end()) {
 					EXPECT(ct->find_index(b)).toBe(ind++);
-					b = ct->find_next(b);
+					b = ct->find_next_leaf(b);
 				}
 			});
 
@@ -162,7 +186,7 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 				size_t ind = 0;
 				while(!b->is_end()) {
 					EXPECT(ct->find_nth(ind++)).toBe(b);
-					b = ct->find_next(b);
+					b = ct->find_next_leaf(b);
 				}
 			});
 
@@ -190,7 +214,7 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 					size_t ind = 0;
 					while(!b->is_end()) {
 						EXPECT(ct->find_index(b)).toBe(ind++);
-						b = ct->find_next(b);
+						b = ct->find_next_leaf(b);
 					}
 				});
 
@@ -199,7 +223,7 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 					size_t ind = 0;
 					while(!b->is_end()) {
 						EXPECT(ct->find_nth(ind++)).toBe(b);
-						b = ct->find_next(b);
+						b = ct->find_next_leaf(b);
 					}
 				});
 			});
