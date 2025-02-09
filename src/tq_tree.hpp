@@ -285,6 +285,7 @@ typename tiq::tree::Tree<N,A>::internal_node_ptr_t tiq::tree::Tree<N,A>::erase_(
 			transplant(y, y->right_);
 			y->right_ = z->right_;
 			y->right_->parent_ = y;
+			y->parent_ = nullptr;
 		}
 
 		// Delete end node.
