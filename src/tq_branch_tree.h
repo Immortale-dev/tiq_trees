@@ -56,6 +56,7 @@ namespace tiq::tree {
 				void add(key_t key, value_t value);
 				void merge(const LayersCollection<K,T,A>& collection);
 				value_t get(key_t key) const;
+				value_t count() const;
 				value_t count(key_t key) const;
 
 			protected:
@@ -103,7 +104,7 @@ namespace tiq::tree {
 				std::optional<branch_type> begin, end;
 			};
 
-			using CountNode<value_type>::count;
+			size_t count(bool include_erased = false) const;
 			size_t count(branch_type branch, bool include_erased = false) const;
 			const value_type* data_at(branch_type branch) const;
 			const value_type& data() const;
@@ -113,7 +114,7 @@ namespace tiq::tree {
 			bool is_branch_begin(branch_type branch) const;
 			bool is_branch_end(branch_type granch) const;
 			bool has_branch(branch_type branch) const;
-			bool has_data() const;
+			bool has_data(bool include_erased = false) const;
 			bool has_data(branch_type branch, bool include_erased = false) const;
 			const branch_type* branch_begin() const;
 			const branch_type* branch_end() const;
@@ -151,24 +152,27 @@ namespace tiq::tree {
 			node_ptr_t remove(node_ptr_t node);
 			node_ptr_t find(comparator_fn_t comp) const;
 			node_ptr_t find(node_ptr_t node, comparator_fn_t comp) const;
-			node_ptr_t find_min(node_ptr_t node = nullptr) const;
-			node_ptr_t find_max(node_ptr_t node = nullptr) const;
+			node_ptr_t find_min(bool search_erased) const;
+			node_ptr_t find_max(bool search_erased) const;
+			node_ptr_t find_min(node_ptr_t node = nullptr, bool search_erased = false) const;
+			node_ptr_t find_max(node_ptr_t node = nullptr, bool search_erased = false) const;
 			node_ptr_t find_min(node_ptr_t node, branch_type branch, bool search_erased = false) const;
 			node_ptr_t find_max(node_ptr_t node, branch_type branch, bool search_erased = false) const;
 			node_ptr_t find_min(branch_type branch, bool search_erased = false) const;
 			node_ptr_t find_max(branch_type branch, bool search_erased = false) const;
-			node_ptr_t find_next(node_ptr_t node) const;
-			node_ptr_t find_prev(node_ptr_t node) const;
+			node_ptr_t find_next(node_ptr_t node, bool search_erased = false) const;
+			node_ptr_t find_prev(node_ptr_t node, bool search_erased = false) const;
 			node_ptr_t find_next(node_ptr_t node, branch_type branch, bool search_erased = false) const;
 			node_ptr_t find_prev(node_ptr_t node, branch_type branch, bool search_erased = false) const;
-			node_ptr_t find_nth(node_ptr_t node, size_t index) const;
-			node_ptr_t find_nth(size_t index) const;
+			node_ptr_t find_nth(node_ptr_t node, size_t index, bool search_erased = false) const;
+			node_ptr_t find_nth(size_t index, bool search_erased = false) const;
 			node_ptr_t find_nth(node_ptr_t node, size_t index, branch_type branch, bool search_erased = false) const;
 			node_ptr_t find_nth(size_t index, branch_type branch, bool search_erased = false) const;
-			size_t find_index(node_ptr_t node, node_ptr_t parent = nullptr) const;
+			size_t find_index(node_ptr_t node, bool search_erased) const;
+			size_t find_index(node_ptr_t node, node_ptr_t parent = nullptr, bool search_erased = false) const;
 			size_t find_index(node_ptr_t node, node_ptr_t parent, branch_type branch, bool search_erased = false) const;
 			size_t find_index(node_ptr_t node, branch_type branch, bool search_erased = false) const;
-			size_t size() const;
+			size_t size(bool search_erased = false) const;
 			size_t size(branch_type branch, bool search_erased = false) const;
 
 		protected:
