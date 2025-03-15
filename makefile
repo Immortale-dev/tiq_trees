@@ -23,6 +23,9 @@ flagsinc=$(foreach d,$(wildcard $(1:=/inc/*)),$(call flagsinc,$d) $(d:=/makefile
 -include $(call flagsinc,.)
 -include makefile.flags
 
+# Extra test flags
+EXTRA_TF=-DDEBUG_TREE_PROPERTIES
+
 LDFLAGS:=$(LIBS_LD)
 INCL=-Isrc -Itest -Iinc $(LIBS_INC) $(MOD_INC)
 
