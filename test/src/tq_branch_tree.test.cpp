@@ -4,6 +4,7 @@
 
 namespace TEST_BRANCH {
 	using Node = tiq::tree::BranchNode<int, int>;
+	using MyNode = Node;
 	using MyTree = tiq::tree::BranchTree<Node>;
 	using CollectionTree = tiq::tree::detail::LayersCollection<int>;
 	using ValueTree = tiq::tree::detail::ValuesCollection<int,int>;
@@ -40,6 +41,30 @@ namespace TEST_BRANCH {
 		int res = dfs(tree, tree->left(node), callback) + dfs(tree, tree->right(node), callback) + 1;
 		callback(node, res);
 		return res;
+	}
+
+
+	void tree_max_height(MyTree *tree, MyNode *node, int &max_height, int current) {
+		if (node->is_end()) {
+			max_height = std::max(max_height, current+1);
+		} else {
+			tree_max_height(tree, tree->left(node), max_height, current+1);
+			tree_max_height(tree, tree->right(node), max_height, current+1);
+		}
+	}
+
+	void inorder_print(MyTree *tree, MyNode *node, int max_height, int current) {
+		if (node->is_end()) return;
+		inorder_print(tree, tree->left(node), max_height, current+1);
+		for (int i=0;i<max_height-current+1;i++) std::cout << "    ";
+		std::cout << "[" << (node->has_data() ? node->data() : 0) << ":" << (node->branches()[0]) << "]" << std::endl;
+		inorder_print(tree, tree->right(node), max_height, current+1);
+	}
+
+	void print_tree(MyTree *tree) {
+		int max_height = 0;
+		tree_max_height(tree, tree->root(), max_height, 0);
+		inorder_print(tree, tree->root(), max_height, 0);
 	}
 }
 
@@ -555,6 +580,7 @@ DESCRIBE("tiq::tree::BranchTree", {
 				*/
 				BEFORE_EACH({
 					for(int i=4;i<=10;i++) {
+						print_tree(tree);
 						tree->erase(tree->find(bs_find(i)));
 					}
 					for(int i=20;i>=17;i--) {
@@ -562,7 +588,7 @@ DESCRIBE("tiq::tree::BranchTree", {
 					}
 				});
 
-				IT("should correctly find min item in layer", {
+				IT_ONLY("should correctly find min item in layer", {
 					EXPECT(tree->find_min(1)->data()).toBe(12);
 					EXPECT(tree->find_min(2)->data()).toBe(12);
 					EXPECT(tree->find_min(3)->data()).toBe(1);

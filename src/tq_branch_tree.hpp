@@ -1,5 +1,7 @@
 // BSTree
 
+#include <cassert>
+
 template<class T, class N>
 typename tiq::tree::detail::BSTree<T,N>::node_ptr_t tiq::tree::detail::BSTree<T,N>::bs_find(key_t key) const
 {
@@ -406,16 +408,16 @@ typename tiq::tree::BranchNode<K,T>::BranchRange tiq::tree::BranchNode<K,T>::get
 }
 
 template<class K, class T>
-typename tiq::tree::BranchNode<K,T>::BranchVector tiq::tree::BranchNode<K,T>::merge_ranges(BranchRange r1, BranchRange r2) const
+typename tiq::tree::BranchNode<K,T>::BranchVector tiq::tree::BranchNode<K,T>::merge_ranges(BranchRange r1, BranchRange r2, bool strict) const
 {
 	BranchVector ret;
-	if (r1.begin && (!r2.begin || r1.begin.value() != r2.begin.value())) {
+	if (r1.begin && (strict || !r2.begin || r1.begin.value() != r2.begin.value())) {
 		ret.push_back(r1.begin.value());
 	}
 	if (r2.begin && (!r1.begin || r1.begin.value() != r2.begin.value())) {
 		ret.push_back(r2.begin.value());
 	}
-	if (r1.end && (!r2.end || r1.end.value() != r2.end.value())) {
+	if (r1.end && (strict || !r2.end || r1.end.value() != r2.end.value())) {
 		ret.push_back(r1.end.value());
 	}
 	if (r2.end && (!r1.end || r1.end.value() != r2.end.value())) {
@@ -443,6 +445,10 @@ typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::inse
 		upward_layer_count_update(n, k);
 	}
 
+	#ifdef DEBUG_TREE_PROPERTIES
+	test_calc();
+	#endif
+
 	return this->to_public_node(n);
 }
 
@@ -461,6 +467,10 @@ typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::eras
 	for (auto &k : keys) {
 		upward_layer_count_update(node, k);
 	}
+
+	#ifdef DEBUG_TREE_PROPERTIES
+	test_calc();
+	#endif
 
 	return node;
 }
@@ -488,6 +498,11 @@ typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::remo
 	}
 
 	auto n = this->erase_(node);
+
+	#ifdef DEBUG_TREE_PROPERTIES
+	test_calc();
+	#endif
+
 	return this->to_public_node(n);
 }
 
@@ -499,12 +514,16 @@ typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::remo
 	}
 
 	auto keys = node->clear_();
-
 	for (auto& key : keys) {
 		upward_layer_count_update(node, key);
 	}
 
 	auto n = this->erase_(node);
+
+	#ifdef DEBUG_TREE_PROPERTIES
+	test_calc();
+	#endif
+
 	return this->to_public_node(n);
 }
 
@@ -693,95 +712,6 @@ typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find
 }
 
 template<class N, class A>
-void tiq::tree::BranchTree<N,A>::left_rotate(internal_node_ptr_t x)
-{
-	CountTree<N,A>::left_rotate(x);
-	wide_count_update(x);
-	wide_count_update(this->parent_(x));
-}
-
-template<class N, class A>
-void tiq::tree::BranchTree<N,A>::right_rotate(internal_node_ptr_t x)
-{
-	CountTree<N,A>::right_rotate(x);
-	wide_count_update(x);
-	wide_count_update(this->parent_(x));
-}
-
-template<class N, class A>
-void tiq::tree::BranchTree<N,A>::transplant(internal_node_ptr_t u, internal_node_ptr_t v)
-{
-	auto range_u = this->to_public_node(u)->get_range();
-	auto range_v = this->to_public_node(v)->get_range();
-
-	auto merged = this->to_public_node(v)->merge_ranges(range_u, range_v);
-
-	CountTree<N,A>::transplant(u, v);
-
-	if (!v->is_end()) {
-		wide_count_update(v);
-	}
-	for (auto &k : merged) {
-		upward_layer_count_update(v, k);
-	}
-}
-
-template<class N, class A>
-void tiq::tree::BranchTree<N,A>::upward_layer_count_update(internal_node_ptr_t node, branch_type branch)
-{
-	do {
-		layer_count_update(node, branch);
-	} while((node = this->parent_(node)));
-}
-
-template<class N, class A>
-void tiq::tree::BranchTree<N,A>::layer_count_update(internal_node_ptr_t node, branch_type branch)
-{
-	if (node->is_end()) return;
-	auto n = this->to_public_node(node);
-	auto left = this->to_public_node(this->left_(node));
-	auto right = this->to_public_node(this->right_(node));
-
-	auto insert_value = left->insert_layers_.get(branch) + right->insert_layers_.get(branch);
-	auto erase_value = left->erase_layers_.get(branch) + right->erase_layers_.get(branch);
-	if (n->is_branch_begin(branch) || (!n->has_branch_begin() && n->is_branch_end(branch))) {
-		++insert_value;
-	}
-	if (n->is_branch_end(branch)) {
-		++erase_value;
-	}
-	n->insert_layers_.set(branch, insert_value);
-	n->erase_layers_.set(branch, erase_value);
-}
-
-template<class N, class A>
-void tiq::tree::BranchTree<N,A>::wide_count_update(internal_node_ptr_t node)
-{
-	auto n = this->to_public_node(node);
-	auto& insert_layers = n->insert_layers_;
-	auto& erase_layers = n->erase_layers_;
-	auto left = this->to_public_node(this->left_(node));
-	auto right = this->to_public_node(this->right_(node));
-
-	insert_layers.clear();
-	insert_layers.merge(left->insert_layers_);
-	insert_layers.merge(right->insert_layers_);
-
-	erase_layers.clear();
-	erase_layers.merge(left->erase_layers_);
-	erase_layers.merge(right->erase_layers_);
-
-	if (n->has_branch_begin()) {
-		insert_layers.add(*(n->branch_begin()), 1);
-	} else if (n->has_branch_end()) {
-		insert_layers.add(*(n->branch_end()), 1);
-	}
-	if (n->has_branch_end()) {
-		erase_layers.add(*(n->branch_end()), 1);
-	}
-}
-
-template<class N, class A>
 typename tiq::tree::BranchTree<N,A>::node_ptr_t tiq::tree::BranchTree<N,A>::find_nth(node_ptr_t node, size_t index, bool search_erased) const
 {
 	if (node->is_end()) {
@@ -920,3 +850,132 @@ size_t tiq::tree::BranchTree<N,A>::size(branch_type branch, bool search_erased) 
 {
 	return this->root()->count(branch, search_erased);
 }
+
+template<class N, class A>
+void tiq::tree::BranchTree<N,A>::left_rotate(internal_node_ptr_t x)
+{
+	CountTree<N,A>::left_rotate(x);
+	wide_count_update(x);
+	wide_count_update(this->parent_(x));
+}
+
+template<class N, class A>
+void tiq::tree::BranchTree<N,A>::right_rotate(internal_node_ptr_t x)
+{
+	CountTree<N,A>::right_rotate(x);
+	wide_count_update(x);
+	wide_count_update(this->parent_(x));
+}
+
+template<class N, class A>
+void tiq::tree::BranchTree<N,A>::transplant(internal_node_ptr_t u, internal_node_ptr_t v)
+{
+	auto range_u = this->to_public_node(u)->get_range();
+	auto range_v = this->to_public_node(v)->get_range();
+
+	auto merged = this->to_public_node(v)->merge_ranges(range_u, range_v, true);
+
+	CountTree<N,A>::transplant(u, v);
+
+	if (!v->is_end()) {
+		wide_count_update(v);
+	}
+	for (auto &k : merged) {
+		upward_layer_count_update(v, k);
+	}
+}
+
+template<class N, class A>
+void tiq::tree::BranchTree<N,A>::upward_layer_count_update(internal_node_ptr_t node, branch_type branch)
+{
+	do {
+		layer_count_update(node, branch);
+	} while((node = this->parent_(node)));
+}
+
+template<class N, class A>
+void tiq::tree::BranchTree<N,A>::layer_count_update(internal_node_ptr_t node, branch_type branch)
+{
+	if (node->is_end()) return;
+	auto n = this->to_public_node(node);
+	auto left = this->to_public_node(this->left_(node));
+	auto right = this->to_public_node(this->right_(node));
+
+	auto insert_value = left->insert_layers_.get(branch) + right->insert_layers_.get(branch);
+	auto erase_value = left->erase_layers_.get(branch) + right->erase_layers_.get(branch);
+
+	if (n->is_branch_begin(branch) || (!n->has_branch_begin() && n->is_branch_end(branch))) {
+		++insert_value;
+	}
+	if (n->is_branch_end(branch)) {
+		++erase_value;
+	}
+
+	n->insert_layers_.set(branch, insert_value);
+	n->erase_layers_.set(branch, erase_value);
+}
+
+template<class N, class A>
+void tiq::tree::BranchTree<N,A>::wide_count_update(internal_node_ptr_t node)
+{
+	auto n = this->to_public_node(node);
+	auto& insert_layers = n->insert_layers_;
+	auto& erase_layers = n->erase_layers_;
+	auto left = this->to_public_node(this->left_(node));
+	auto right = this->to_public_node(this->right_(node));
+
+	insert_layers.clear();
+	insert_layers.merge(left->insert_layers_);
+	insert_layers.merge(right->insert_layers_);
+
+	erase_layers.clear();
+	erase_layers.merge(left->erase_layers_);
+	erase_layers.merge(right->erase_layers_);
+
+	if (n->has_branch_begin()) {
+		insert_layers.add(*(n->branch_begin()), 1);
+	} else if (n->has_branch_end()) {
+		insert_layers.add(*(n->branch_end()), 1);
+	}
+	if (n->has_branch_end()) {
+		erase_layers.add(*(n->branch_end()), 1);
+	}
+}
+
+#ifdef DEBUG_TREE_PROPERTIES
+
+template<class N, class A>
+void tiq::tree::BranchTree<N,A>::test_calc()
+{
+	this->dfs(this->root(), [this](internal_node_ptr_t node) {
+		if (node->is_end()) return;
+		auto n = this->to_public_node(node);
+		auto& insert_layers = n->insert_layers_;
+		auto& erase_layers = n->erase_layers_;
+
+		detail::LayersCollection<branch_type> new_insert_layers, new_erase_layers;
+
+		auto left = this->to_public_node(this->left(n));
+		auto right = this->to_public_node(this->right(n));
+
+		new_insert_layers.merge(left->insert_layers_);
+		new_insert_layers.merge(right->insert_layers_);
+
+		new_erase_layers.merge(left->erase_layers_);
+		new_erase_layers.merge(right->erase_layers_);
+
+		if (n->has_branch_begin()) {
+			new_insert_layers.add(*(n->branch_begin()), 1);
+		} else if (n->has_branch_end()) {
+			new_insert_layers.add(*(n->branch_end()), 1);
+		}
+		if (n->has_branch_end()) {
+			new_erase_layers.add(*(n->branch_end()), 1);
+		}
+
+		assert(insert_layers.count() == new_insert_layers.count());
+		assert(erase_layers.count() == new_erase_layers.count());
+	});
+}
+
+#endif

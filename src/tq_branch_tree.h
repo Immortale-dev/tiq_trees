@@ -127,7 +127,7 @@ namespace tiq::tree {
 			BranchVector remove_(branch_type branch);
 			BranchVector clear_();
 			BranchRange get_range() const;
-			BranchVector merge_ranges(BranchRange r1, BranchRange r2) const;
+			BranchVector merge_ranges(BranchRange r1, BranchRange r2, bool strict = false) const;
 			bool empty_() const;
 
 			detail::ValuesCollection<branch_type,value_type> inserts_;
@@ -181,6 +181,10 @@ namespace tiq::tree {
 			void transplant(internal_node_ptr_t u, internal_node_ptr_t v) override;
 
 		private:
+			#ifdef DEBUG_TREE_PROPERTIES
+			void test_calc();
+			#endif
+
 			void upward_layer_count_update(internal_node_ptr_t node, branch_type branch);
 			void layer_count_update(internal_node_ptr_t node, branch_type branch);
 			void wide_count_update(internal_node_ptr_t node);
