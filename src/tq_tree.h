@@ -12,10 +12,10 @@ namespace tiq::tree {
 
 		public:
 			virtual ~InternalNode(){}
-			bool is_end() const { return is_end_; }
+			inline bool is_end() const { return is_end_; }
 
 			#ifdef DEBUG_TREE_PROPERTIES
-			bool debug_get_color() { return color_; }
+			bool debug_get_color() const { return color_; }
 			#endif
 
 		protected:
@@ -61,11 +61,11 @@ namespace tiq::tree {
 			node_ptr_t find_max(node_ptr_t node = nullptr) const;
 			node_ptr_t find_next(node_ptr_t node) const;
 			node_ptr_t find_prev(node_ptr_t node) const;
-			node_ptr_t parent(node_ptr_t node) const;
-			node_ptr_t left(node_ptr_t node) const;
-			node_ptr_t right(node_ptr_t node) const;
-			node_ptr_t before(node_ptr_t node = nullptr) const;
-			node_ptr_t after(node_ptr_t node = nullptr) const;
+			inline node_ptr_t parent(node_ptr_t node) const;
+			inline node_ptr_t left(node_ptr_t node) const;
+			inline node_ptr_t right(node_ptr_t node) const;
+			inline node_ptr_t before(node_ptr_t node = nullptr) const;
+			inline node_ptr_t after(node_ptr_t node = nullptr) const;
 			node_ptr_t insert(node_ptr_t node, T data);
 			node_ptr_t erase(node_ptr_t node);
 			void clear();
@@ -83,15 +83,15 @@ namespace tiq::tree {
 			virtual void right_rotate(internal_node_ptr_t x);
 			virtual void transplant(internal_node_ptr_t u, internal_node_ptr_t v);
 
-			internal_node_ptr_t left_(internal_node_ptr_t) const;
-			internal_node_ptr_t right_(internal_node_ptr_t) const;
-			internal_node_ptr_t parent_(internal_node_ptr_t) const;
+			inline internal_node_ptr_t left_(internal_node_ptr_t) const;
+			inline internal_node_ptr_t right_(internal_node_ptr_t) const;
+			inline internal_node_ptr_t parent_(internal_node_ptr_t) const;
 
-			node_ptr_t to_public_node(internal_node_ptr_t node) const;
-			internal_node_ptr_t to_internal_node(node_ptr_t node) const;
-			internal_node_ptr_t create_empty_node();
-			void delete_node(internal_node_ptr_t node);
-			void groom_node(internal_node_ptr_t node);
+			inline node_ptr_t to_public_node(internal_node_ptr_t node) const;
+			inline internal_node_ptr_t to_internal_node(node_ptr_t node) const;
+			internal_node_ptr_t create_empty_node() const;
+			virtual void delete_node(internal_node_ptr_t node);
+			virtual void groom_node(internal_node_ptr_t node);
 
 			void fix_delete(internal_node_ptr_t x);
 			void fix_insert(internal_node_ptr_t x);
@@ -103,7 +103,7 @@ namespace tiq::tree {
 			internal_node_ptr_t end_;
 
 		private:
-			A alloc_;
+			static A alloc_;
 	};
 } // namespace tiq::tree
 

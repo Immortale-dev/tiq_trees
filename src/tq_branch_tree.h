@@ -19,7 +19,7 @@ namespace tiq::tree {
 			public:
 				using key_t = K;
 
-				const key_t& key() const { return key_; }
+				inline const key_t& key() const { return key_; }
 
 			protected:
 				key_t key_;
@@ -55,13 +55,13 @@ namespace tiq::tree {
 				void unset(key_t key);
 				void add(key_t key, value_t value);
 				void merge(const LayersCollection<K,T,A>& collection);
-				value_t get(key_t key) const;
-				value_t count() const;
+				inline value_t get(key_t key) const;
+				inline value_t count() const;
 				value_t count(key_t key) const;
 
 			protected:
-				void calc_count(internal_node_ptr_t x) override;
-				LayersCollection<K,T,A>* get_tree() const override;
+				inline void calc_count(internal_node_ptr_t x) override;
+				inline LayersCollection<K,T,A>* get_tree() const override;
 		};
 
 		template<class K, class T>
@@ -89,7 +89,7 @@ namespace tiq::tree {
 				bool contains(key_t key) const;
 
 			protected:
-				ValuesCollection<K,T,A>* get_tree() const override;
+				inline ValuesCollection<K,T,A>* get_tree() const override;
 		};
 	} // namespace tiq::tree::detail
 
@@ -130,10 +130,10 @@ namespace tiq::tree {
 			BranchVector merge_ranges(BranchRange r1, BranchRange r2, bool strict = false) const;
 			bool empty_() const;
 
-			detail::ValuesCollection<branch_type,value_type> inserts_;
-			detail::ValuesCollection<branch_type,bool> erases_;
-			detail::LayersCollection<branch_type> insert_layers_;
-			detail::LayersCollection<branch_type> erase_layers_;
+			detail::ValuesCollection<branch_type,value_type>* inserts_;
+			detail::ValuesCollection<branch_type,bool>* erases_;
+			detail::LayersCollection<branch_type>* insert_layers_;
+			detail::LayersCollection<branch_type>* erase_layers_;
 	};
 
 	template<class N, class A = std::allocator<N>>
@@ -179,6 +179,8 @@ namespace tiq::tree {
 			void left_rotate(internal_node_ptr_t x) override;
 			void right_rotate(internal_node_ptr_t x) override;
 			void transplant(internal_node_ptr_t u, internal_node_ptr_t v) override;
+			void groom_node(internal_node_ptr_t node) override;
+			void delete_node(internal_node_ptr_t node) override;
 
 		private:
 			#ifdef DEBUG_TREE_PROPERTIES

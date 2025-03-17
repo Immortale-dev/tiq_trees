@@ -12,7 +12,7 @@ namespace tiq::tree {
 		public:
 			using value_type = T;
 
-			size_t count() const { return count_; };
+			inline size_t count() const { return count_; };
 
 		protected:
 			size_t count_ = 0;
@@ -36,7 +36,7 @@ namespace tiq::tree {
 			void left_rotate(internal_node_ptr_t x) override;
 			void right_rotate(internal_node_ptr_t x) override;
 			void transplant(internal_node_ptr_t u, internal_node_ptr_t v) override;
-			virtual void calc_count(internal_node_ptr_t x);
+			virtual inline void calc_count(internal_node_ptr_t x);
 
 		private:
 			void calc_upward(internal_node_ptr_t x);

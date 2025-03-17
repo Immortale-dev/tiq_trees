@@ -3,6 +3,9 @@
 #include <memory>
 
 template<class N, class A>
+A tiq::tree::Tree<N,A>::alloc_;
+
+template<class N, class A>
 tiq::tree::Tree<N,A>::Tree() : count_(0)
 {
 	root_ = begin_ = end_ = create_empty_node();
@@ -557,7 +560,7 @@ void tiq::tree::Tree<N,A>::fix_insert(internal_node_ptr_t k)
 }
 
 template<class N, class A>
-typename tiq::tree::Tree<N,A>::internal_node_ptr_t tiq::tree::Tree<N,A>::create_empty_node()
+typename tiq::tree::Tree<N,A>::internal_node_ptr_t tiq::tree::Tree<N,A>::create_empty_node() const
 {
 	node_ptr_t node = std::allocator_traits<A>::allocate(alloc_, 1);
 	std::allocator_traits<A>::construct(alloc_, node);
@@ -581,3 +584,4 @@ void tiq::tree::Tree<N,A>::groom_node(internal_node_ptr_t node)
 	node->left_->parent_ = node;
 	node->right_->parent_ = node;
 }
+
