@@ -2,10 +2,10 @@
 #include <iterator>
 
 template<typename N, typename A>
-tiq::engine::detail::RopeTree<N,A>::RopeTree(uint16_t value_size) : value_size_(value_size), value_min_size_(value_size/2), value_max_size_(value_size*2) {}
+tiq::tree::RopeTree<N,A>::RopeTree(uint16_t value_size) : value_size_(value_size), value_min_size_(value_size/2), value_max_size_(value_size*2) {}
 
 template<typename N, typename A>
-typename tiq::engine::detail::RopeTree<N,A>::internal_node_ptr_t tiq::engine::detail::RopeTree<N,A>::insert_(internal_node_ptr_t node)
+typename tiq::tree::RopeTree<N,A>::internal_node_ptr_t tiq::tree::RopeTree<N,A>::insert_(internal_node_ptr_t node)
 {
 	calc_size(node);
 	tiq::tree::CountTree<N,A>::insert_(node);
@@ -17,7 +17,7 @@ typename tiq::engine::detail::RopeTree<N,A>::internal_node_ptr_t tiq::engine::de
 }
 
 template<typename N, typename A>
-void tiq::engine::detail::RopeTree<N,A>::calc_count(internal_node_ptr_t x)
+void tiq::tree::RopeTree<N,A>::calc_count(internal_node_ptr_t x)
 {
 	if (x->is_end()) return;
 	node_ptr_t node = this->to_public_node(x);
@@ -25,13 +25,13 @@ void tiq::engine::detail::RopeTree<N,A>::calc_count(internal_node_ptr_t x)
 }
 
 template<typename N, typename A>
-size_t tiq::engine::detail::RopeTree<N,A>::size_() const
+size_t tiq::tree::RopeTree<N,A>::size_() const
 {
 	return this->root()->count();
 }
 
 template<typename N, typename A>
-void tiq::engine::detail::RopeTree<N,A>::calc_size(internal_node_ptr_t node) const
+void tiq::tree::RopeTree<N,A>::calc_size(internal_node_ptr_t node) const
 {
 	node_ptr_t n = this->to_public_node(node);
 	if (!n->data_) return;
@@ -39,7 +39,7 @@ void tiq::engine::detail::RopeTree<N,A>::calc_size(internal_node_ptr_t node) con
 }
 
 template<typename N, typename A>
-typename tiq::engine::detail::RopeTree<N,A>::value_list_iterator tiq::engine::detail::RopeTree<N,A>::find_offset_item([[maybe_unused]] content_list_t& container, value_list_iterator b, int16_t offset) const
+typename tiq::tree::RopeTree<N,A>::value_list_iterator tiq::tree::RopeTree<N,A>::find_offset_item([[maybe_unused]] content_list_t& container, value_list_iterator b, int16_t offset) const
 {
 	if (offset > 0) {
 		if (std::distance(b, container.cend()) <= offset) return container.end();
@@ -50,7 +50,7 @@ typename tiq::engine::detail::RopeTree<N,A>::value_list_iterator tiq::engine::de
 }
 
 template<typename N, typename A>
-void tiq::engine::detail::RopeTree<N,A>::relax(node_ptr_t begin, node_ptr_t end)
+void tiq::tree::RopeTree<N,A>::relax(node_ptr_t begin, node_ptr_t end)
 {
 	auto n = begin;
 	size_t total_size = 0;

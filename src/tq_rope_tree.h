@@ -8,7 +8,7 @@
 #include "tq_tree.h"
 #include "tq_count_tree.h"
 
-namespace tiq::engine::detail {
+namespace tiq::tree {
 	template<typename T, typename Container = std::vector<T>>
 	class RopeNode : public tiq::tree::CountNode<Container> {
 		template<typename _N, typename _A> friend class RopeTree;

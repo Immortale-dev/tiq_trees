@@ -1,8 +1,8 @@
 #include "tq_rope_tree.h"
 
 namespace TEST_ROPE_NS {
-	using MyNode = tiq::engine::detail::RopeNode<int, std::vector<int>>;
-	using MyTree = tiq::engine::detail::RopeTree<MyNode>;
+	using MyNode = tiq::tree::RopeNode<int, std::vector<int>>;
+	using MyTree = tiq::tree::RopeTree<MyNode>;
 
 	std::vector<int> get_rope_content(MyTree &r) {
 		std::vector<int> result;
@@ -51,7 +51,7 @@ SCENARIO_START
 
 using namespace TEST_ROPE_NS;
 
-DESCRIBE("tiq::engine::detail::Rope", {
+DESCRIBE("tiq::tree::detail::Rope", {
 	IT("should construct the rope", {
 		MyTree rope(100);
 
