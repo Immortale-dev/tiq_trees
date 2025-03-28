@@ -42,10 +42,10 @@ template<typename N, typename A>
 typename tiq::tree::RopeTree<N,A>::value_list_iterator tiq::tree::RopeTree<N,A>::find_offset_item([[maybe_unused]] content_list_t& container, value_list_iterator b, int16_t offset) const
 {
 	if (offset > 0) {
-		if (std::distance(b, container.cend()) <= offset) return container.end();
+		if (std::distance(b, container.end()) <= offset) return container.end();
 		return std::next(b, offset);
 	}
-	if (std::distance(container.cbegin(), b) < -offset) return std::prev(container.begin());
+	if (std::distance(container.begin(), b) < -offset) return std::prev(container.begin());
 	return std::prev(b, -offset);
 }
 
@@ -76,7 +76,7 @@ void tiq::tree::RopeTree<N,A>::relax(node_ptr_t begin, node_ptr_t end)
 	}
 	content_list_t content;
 	for (auto n : nodes) {
-		content.insert(content.end(), std::make_move_iterator(n->data().begin()), std::make_move_iterator(n->data().end()));
+		content.insert(content.end(), std::make_move_iterator(n->data_->begin()), std::make_move_iterator(n->data_->end()));
 	}
 
 	size_t rest = total_size % value_size_;
@@ -101,7 +101,8 @@ void tiq::tree::RopeTree<N,A>::relax(node_ptr_t begin, node_ptr_t end)
 		take_rest = false;
 		b = e;
 		e = find_offset_item(content, e, take);
-		this->insert(nodes[i], content_list_t(std::make_move_iterator(b), std::make_move_iterator(e)));
+		nodes[i]->data_ = content_list_t(std::make_move_iterator(b), std::make_move_iterator(e));
+		this->insert_(nodes[i]);
 	}
 
 	if (i == cnt) return;
@@ -110,7 +111,8 @@ void tiq::tree::RopeTree<N,A>::relax(node_ptr_t begin, node_ptr_t end)
 	for (;i<cnt;i++) {
 		b = e;
 		e = find_offset_item(content, e, value_size_);
-		this->insert(n, content_list_t(b, e));
+		n->data_ = content_list_t(std::make_move_iterator(b), std::make_move_iterator(e));
+		this->insert_(n);
 		n = this->after(n);
 	}
 }

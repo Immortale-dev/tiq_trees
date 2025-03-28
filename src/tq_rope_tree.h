@@ -30,7 +30,7 @@ namespace tiq::tree {
 			using node_ptr_t = N*;
 			using node_list_t = std::vector<node_ptr_t>;
 			using content_list_t = typename N::value_list_t;
-			using value_list_iterator = typename content_list_t::const_iterator;
+			using value_list_iterator = typename content_list_t::iterator;
 
 			explicit RopeTree(uint16_t value_size);
 
