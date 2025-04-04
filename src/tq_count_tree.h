@@ -21,6 +21,7 @@ namespace tiq::tree {
 	template<class N, class A = std::allocator<N>>
 	class CountTree : public Tree<N,A> {
 		public:
+			using node_t = N;
 			using T = typename N::value_type;
 			using internal_node_ptr_t = InternalNode*;
 			using node_ptr_t = N*;

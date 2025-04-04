@@ -33,6 +33,7 @@ namespace tiq::tree {
 			using value_type = T;
 
 			const T& data() const { return data_.value(); }
+			bool has_data() const { return !!data_; }
 
 		protected:
 			std::optional<T> data_;
@@ -51,9 +52,9 @@ namespace tiq::tree {
 			Tree(const Tree&) = delete;
 			Tree& operator=(const Tree&) = delete;
 
-			node_ptr_t root() const;
-			node_ptr_t begin() const;
-			node_ptr_t end() const;
+			inline node_ptr_t root() const;
+			inline node_ptr_t begin() const;
+			inline node_ptr_t end() const;
 
 			node_ptr_t find(comparator_fn_t comp) const;
 			node_ptr_t find(node_ptr_t node, comparator_fn_t comp) const;
@@ -69,7 +70,7 @@ namespace tiq::tree {
 			node_ptr_t insert(node_ptr_t node, T data);
 			node_ptr_t erase(node_ptr_t node);
 			void clear();
-			size_t size() const;
+			inline size_t size() const;
 
 		protected:
 			virtual internal_node_ptr_t find_(internal_node_ptr_t node, comparator_fn_t comp) const;
@@ -89,7 +90,7 @@ namespace tiq::tree {
 
 			inline node_ptr_t to_public_node(internal_node_ptr_t node) const;
 			inline internal_node_ptr_t to_internal_node(node_ptr_t node) const;
-			internal_node_ptr_t create_empty_node() const;
+			inline internal_node_ptr_t create_empty_node() const;
 			virtual void delete_node(internal_node_ptr_t node);
 			virtual void groom_node(internal_node_ptr_t node);
 
