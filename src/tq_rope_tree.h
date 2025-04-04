@@ -1,7 +1,7 @@
 #ifndef TQ_TREE_ROPE_TREE_H_
 #define TQ_TREE_ROPE_TREE_H_
 
-#include "tq_tree"
+#include "tq_tree.h"
 #include "tq_rope_interface.h"
 
 namespace tiq::tree {
