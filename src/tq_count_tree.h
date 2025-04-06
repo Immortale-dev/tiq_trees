@@ -37,7 +37,7 @@ namespace tiq::tree {
 			void left_rotate(internal_node_ptr_t x) override;
 			void right_rotate(internal_node_ptr_t x) override;
 			void transplant(internal_node_ptr_t u, internal_node_ptr_t v) override;
-			virtual inline void calc_count(internal_node_ptr_t x);
+			virtual inline void calc_count(internal_node_ptr_t x) const;
 
 		private:
 			void calc_upward(internal_node_ptr_t x);

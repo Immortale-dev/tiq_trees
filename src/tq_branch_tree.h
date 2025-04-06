@@ -60,7 +60,7 @@ namespace tiq::tree {
 				value_t count(key_t key) const;
 
 			protected:
-				inline void calc_count(internal_node_ptr_t x) override;
+				inline void calc_count(internal_node_ptr_t x) const override;
 				inline LayersCollection<K,T,A>* get_tree() const override;
 		};
 

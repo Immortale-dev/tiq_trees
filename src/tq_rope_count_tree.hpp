@@ -17,7 +17,7 @@ typename tiq::tree::RopeCountTree<N,A>::internal_node_ptr_t tiq::tree::RopeCount
 }
 
 template<typename N, typename A>
-void tiq::tree::RopeCountTree<N,A>::calc_count(internal_node_ptr_t x)
+void tiq::tree::RopeCountTree<N,A>::calc_count(internal_node_ptr_t x) const
 {
 	if (x->is_end()) return;
 	node_ptr_t node = this->to_public_node(x);

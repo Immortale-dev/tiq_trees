@@ -111,7 +111,7 @@ void tiq::tree::detail::LayersCollection<K,T,A>::merge(const LayersCollection<K,
 }
 
 template<class K, class T, class A>
-void tiq::tree::detail::LayersCollection<K,T,A>::calc_count(internal_node_ptr_t x)
+void tiq::tree::detail::LayersCollection<K,T,A>::calc_count(internal_node_ptr_t x) const
 {
 	CountTree<LayersCollectionNode<K,T>,A>::calc_count(x);
 

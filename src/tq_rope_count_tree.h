@@ -34,7 +34,7 @@ namespace tiq::tree {
 
 		protected:
 			internal_node_ptr_t insert_(internal_node_ptr_t node) override;
-			void calc_count(internal_node_ptr_t x) override;
+			void calc_count(internal_node_ptr_t x) const override;
 			size_t size_() const override;
 	};
 }

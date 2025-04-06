@@ -52,6 +52,7 @@ void tiq::tree::RopeInterface<D,N>::relax(node_ptr_t begin, node_ptr_t end)
 	content_list_t content;
 	for (auto n : nodes) {
 		content.insert(content.end(), std::make_move_iterator(n->data_->begin()), std::make_move_iterator(n->data_->end()));
+		n->data_->clear();
 	}
 
 	size_t rest = total_size % value_size_;

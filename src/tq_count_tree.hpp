@@ -96,7 +96,7 @@ void tiq::tree::CountTree<N,A>::transplant(internal_node_ptr_t u, internal_node_
 }
 
 template<class N, class A>
-void tiq::tree::CountTree<N,A>::calc_count(internal_node_ptr_t x)
+void tiq::tree::CountTree<N,A>::calc_count(internal_node_ptr_t x) const
 {
 	if (x->is_end()) { return; }
 	this->to_public_node(x)->count_ = this->to_public_node(this->left_(x))->count_ + this->to_public_node(this->right_(x))->count_ + 1;
