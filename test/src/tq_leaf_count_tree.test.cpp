@@ -1,3 +1,5 @@
+#include "qtest.hpp"
+
 #include <vector>
 #include <functional>
 
@@ -42,7 +44,7 @@ namespace TEST_LEAF_COUNT {
 		return res;
 	}
 
-	int calc_node_counts(MyTree* tree, Node* node, std::vector<std::pair<Node*,int>> &res) {
+	int calc_node_counts(MyTree* tree, Node* node, std::vector<std::pair<Node*,size_t>> &res) {
 		if (node->is_end()) return 0;
 		int r = calc_node_counts(tree, tree->left(node), res) + calc_node_counts(tree, tree->right(node), res);
 		if (node->is_leaf()) r++;
@@ -67,7 +69,7 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 		});
 
 		IT("should show 0 as root size", {
-			EXPECT(ct->root()->count()).toBe(0);
+			EXPECT(ct->root()->count()).toBe(0ull);
 		});
 
 		DESCRIBE("Add 10 items with keys from 1 to 10 to the end of the tree", {
@@ -78,7 +80,7 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 			});
 
 			IT("should calculate counts correctly", {
-				std::vector<std::pair<Node*,int>> res;
+				std::vector<std::pair<Node*,size_t>> res;
 				calc_node_counts(ct, ct->root(), res);
 
 				for (auto &p : res) {
@@ -91,10 +93,10 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 
 				for (auto n : nodes) {
 					if (ct->left(n)->is_end()) {
-						EXPECT(ct->left(n)->count()).toBe(0);
+						EXPECT(ct->left(n)->count()).toBe(0ull);
 					}
 					if (ct->right(n)->is_end()) {
-						EXPECT(ct->right(n)->count()).toBe(0);
+						EXPECT(ct->right(n)->count()).toBe(0ull);
 					}
 				}
 			});
@@ -107,7 +109,7 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 				});
 
 				IT("should correctly update counts", {
-					std::vector<std::pair<Node*,int>> res;
+					std::vector<std::pair<Node*,size_t>> res;
 					calc_node_counts(ct, ct->root(), res);
 
 					for (auto &p : res) {
@@ -129,7 +131,7 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 			});
 
 			IT("should keep counts correctly", {
-				std::vector<std::pair<Node*,int>> res;
+				std::vector<std::pair<Node*,size_t>> res;
 				calc_node_counts(ct, ct->root(), res);
 
 				for (auto &p : res) {
@@ -168,7 +170,7 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 
 			IT("should calculate counts correctly", {
 				dfs(ct, ct->root(), [](Node* n, int d){
-					EXPECT(n->count()).toBe(d);
+					EXPECT(n->count()).toBe((size_t)d);
 				});
 			});
 
@@ -205,7 +207,7 @@ DESCRIBE("tiq::tree::LeafCountTree", {
 
 				IT("should update counts correctly", {
 					dfs(ct, ct->root(), [](Node* n, int d){
-						EXPECT(n->count()).toBe(d);
+						EXPECT(n->count()).toBe((size_t)d);
 					});
 				});
 

@@ -1,3 +1,5 @@
+#include "qtest.hpp"
+
 #include <vector>
 
 #include "tq_branch_tree.h"
@@ -83,15 +85,15 @@ DESCRIBE("tiq::tree::detail::LayersCollection", {
 		});
 
 		IT("should return 0 for keys that are not found", {
-			EXPECT(tree->get(10)).toBe(0);
-			EXPECT(tree->size()).toBe(0);
+			EXPECT(tree->get(10)).toBe(0ull);
+			EXPECT(tree->size()).toBe(0ull);
 		});
 
 		IT("should set new value correctly", {
 			tree->set(5, 10);
 
-			EXPECT(tree->size()).toBe(1);
-			EXPECT(tree->get(5)).toBe(10);
+			EXPECT(tree->size()).toBe(1ull);
+			EXPECT(tree->get(5)).toBe(10ull);
 		});
 
 		IT("should add value correctly", {
@@ -100,9 +102,9 @@ DESCRIBE("tiq::tree::detail::LayersCollection", {
 
 			tree->add(5, 3);
 
-			EXPECT(tree->size()).toBe(2);
-			EXPECT(tree->get(5)).toBe(4);
-			EXPECT(tree->get(6)).toBe(2);
+			EXPECT(tree->size()).toBe(2ull);
+			EXPECT(tree->get(5)).toBe(4ull);
+			EXPECT(tree->get(6)).toBe(2ull);
 		});
 
 		IT("should unset value correctly", {
@@ -111,9 +113,9 @@ DESCRIBE("tiq::tree::detail::LayersCollection", {
 
 			tree->unset(5);
 
-			EXPECT(tree->get(5)).toBe(0);
-			EXPECT(tree->get(6)).toBe(2);
-			EXPECT(tree->size()).toBe(1);
+			EXPECT(tree->get(5)).toBe(0ull);
+			EXPECT(tree->get(6)).toBe(2ull);
+			EXPECT(tree->size()).toBe(1ull);
 		});
 
 		IT("should merge trees correctly", {
@@ -125,10 +127,10 @@ DESCRIBE("tiq::tree::detail::LayersCollection", {
 
 			tree->merge(other);
 
-			EXPECT(tree->size()).toBe(3);
-			EXPECT(tree->get(5)).toBe(4);
-			EXPECT(tree->get(6)).toBe(13);
-			EXPECT(tree->get(7)).toBe(15);
+			EXPECT(tree->size()).toBe(3ull);
+			EXPECT(tree->get(5)).toBe(4ull);
+			EXPECT(tree->get(6)).toBe(13ull);
+			EXPECT(tree->get(7)).toBe(15ull);
 		});
 
 		IT("should calculate count correctly", {
@@ -136,11 +138,11 @@ DESCRIBE("tiq::tree::detail::LayersCollection", {
 			tree->set(1, 2);
 			tree->set(4, 4);
 
-			EXPECT(tree->count(1)).toBe(2);
-			EXPECT(tree->count(2)).toBe(7);
-			EXPECT(tree->count(3)).toBe(7);
-			EXPECT(tree->count(4)).toBe(11);
-			EXPECT(tree->count()).toBe(11);
+			EXPECT(tree->count(1)).toBe(2ull);
+			EXPECT(tree->count(2)).toBe(7ull);
+			EXPECT(tree->count(3)).toBe(7ull);
+			EXPECT(tree->count(4)).toBe(11ull);
+			EXPECT(tree->count()).toBe(11ull);
 		});
 
 		DESCRIBE("added 20 values and removed 15", {
@@ -158,7 +160,7 @@ DESCRIBE("tiq::tree::detail::LayersCollection", {
 
 			IT("should show correct values", {
 				for(int i=6;i<=10;i++) {
-					EXPECT(tree->get(i)).toBe(i*2);
+					EXPECT(tree->get(i)).toBe(i*2ull);
 				}
 			});
 
@@ -175,10 +177,10 @@ DESCRIBE("tiq::tree::detail::LayersCollection", {
 			IT("should clear the tree correctly", {
 				tree->clear();
 
-				EXPECT(tree->size()).toBe(0);
-				EXPECT(tree->count(10)).toBe(0);
-				EXPECT(tree->count()).toBe(0);
-				EXPECT(tree->get(7)).toBe(0);
+				EXPECT(tree->size()).toBe(0ull);
+				EXPECT(tree->count(10)).toBe(0ull);
+				EXPECT(tree->count()).toBe(0ull);
+				EXPECT(tree->get(7)).toBe(0ull);
 			});
 		});
 	});
@@ -195,7 +197,7 @@ DESCRIBE("tiq::tree::detail::ValuesCollection", {
 		});
 
 		IT("should be empty", {
-			EXPECT(tree->size()).toBe(0);
+			EXPECT(tree->size()).toBe(0ull);
 			EXPECT(tree->has()).toBe(false);
 		});
 
@@ -210,7 +212,7 @@ DESCRIBE("tiq::tree::detail::ValuesCollection", {
 			});
 
 			IT("should contain 10 items", {
-				EXPECT(tree->size()).toBe(10);
+				EXPECT(tree->size()).toBe(10ull);
 				for (int i=1;i<=5;i++) {
 					EXPECT(tree->contains(i)).toBe(true);
 				}
@@ -276,7 +278,7 @@ DESCRIBE("tiq::tree::detail::ValuesCollection", {
 				});
 
 				IT("should get correctly", {
-					EXPECT(tree->size()).toBe(8);
+					EXPECT(tree->size()).toBe(8ull);
 					EXPECT(*tree->get()).toBe(28);
 					EXPECT(*tree->get(13)).toBe(24);
 				});
@@ -298,7 +300,7 @@ DESCRIBE("tiq::tree::detail::ValuesCollection", {
 				});
 
 				IT("should not have any items", {
-					EXPECT(tree->size()).toBe(0);
+					EXPECT(tree->size()).toBe(0ull);
 					EXPECT(tree->has()).toBe(false);
 					EXPECT(tree->has(1)).toBe(false);
 					EXPECT(tree->get()).toBe(nullptr);
@@ -311,7 +313,7 @@ DESCRIBE("tiq::tree::detail::ValuesCollection", {
 						keys.push_back(b->key());
 						b = tree->find_next(b);
 					}
-					EXPECT(keys.size()).toBe(0);
+					EXPECT(keys.size()).toBe(0ull);
 				});
 			});
 		});
@@ -334,13 +336,13 @@ DESCRIBE("tiq::tree::BranchTree", {
 			});
 
 			IT("should return 1 for include erased size", {
-				EXPECT(tree->size(1)).toBe(0);
-				EXPECT(tree->size(1, true)).toBe(1);
+				EXPECT(tree->size(1)).toBe(0ull);
+				EXPECT(tree->size(1, true)).toBe(1ull);
 			});
 
 			IT("should correctly count size", {
-				EXPECT(tree->size()).toBe(0);
-				EXPECT(tree->size(true)).toBe(1);
+				EXPECT(tree->size()).toBe(0ull);
+				EXPECT(tree->size(true)).toBe(1ull);
 			});
 		});
 
@@ -362,9 +364,9 @@ DESCRIBE("tiq::tree::BranchTree", {
 			IT("should count layer sizes correctly", {
 				auto root = tree->root();
 				for (int i=1;i<=10;i++) {
-					EXPECT(root->count(i)).toBe(i);
+					EXPECT(root->count(i)).toBe((size_t)i);
 				}
-				EXPECT(root->count()).toBe(10);
+				EXPECT(root->count()).toBe(10ull);
 			});
 		});
 
@@ -400,13 +402,13 @@ DESCRIBE("tiq::tree::BranchTree", {
 			});
 
 			IT("should count layer sizes correctly", {
-				EXPECT(tree->root()->count(1)).toBe(6);
-				EXPECT(tree->root()->count(2)).toBe(12);
-				EXPECT(tree->root()->count(3)).toBe(18);
-				EXPECT(tree->root()->count(5)).toBe(18);
-				EXPECT(tree->root()->count(10)).toBe(20);
-				EXPECT(tree->root()->count(12)).toBe(20);
-				EXPECT(tree->root()->count()).toBe(20);
+				EXPECT(tree->root()->count(1)).toBe(6ull);
+				EXPECT(tree->root()->count(2)).toBe(12ull);
+				EXPECT(tree->root()->count(3)).toBe(18ull);
+				EXPECT(tree->root()->count(5)).toBe(18ull);
+				EXPECT(tree->root()->count(10)).toBe(20ull);
+				EXPECT(tree->root()->count(12)).toBe(20ull);
+				EXPECT(tree->root()->count()).toBe(20ull);
 			});
 
 			IT("should update node value", {
@@ -548,7 +550,7 @@ DESCRIBE("tiq::tree::BranchTree", {
 
 			IT("should correctly find item index in layers", {
 				std::vector<int> layers{1,2,3,4,12,0};
-				std::vector<int> layers_size{6, 12, 18, 18, 20, 0};
+				std::vector<size_t> layers_size{6, 12, 18, 18, 20, 0};
 
 				int l=0;
 				for (auto layer : layers) {
@@ -569,7 +571,7 @@ DESCRIBE("tiq::tree::BranchTree", {
 					EXPECT(tree->find_index(b)).toBe(ind++);
 					b = tree->find_next(b);
 				}
-				EXPECT(ind).toBe(20);
+				EXPECT(ind).toBe(20ull);
 			});
 
 			DESCRIBE("erase some items", {
@@ -580,7 +582,6 @@ DESCRIBE("tiq::tree::BranchTree", {
 				*/
 				BEFORE_EACH({
 					for(int i=4;i<=10;i++) {
-						print_tree(tree);
 						tree->erase(tree->find(bs_find(i)));
 					}
 					for(int i=20;i>=17;i--) {
@@ -714,7 +715,7 @@ DESCRIBE("tiq::tree::BranchTree", {
 
 				IT("should correctly find item index in layer", {
 					std::vector<int> layers{1,2,3,4,12,0};
-					std::vector<int> layers_size{3, 3, 8, 8, 9, 0};
+					std::vector<size_t> layers_size{3, 3, 8, 8, 9, 0};
 
 					int l=0;
 					for (auto layer : layers) {
@@ -735,7 +736,7 @@ DESCRIBE("tiq::tree::BranchTree", {
 						EXPECT(tree->find_index(b)).toBe(ind++);
 						b = tree->find_next(b);
 					}
-					EXPECT(ind).toBe(9);
+					EXPECT(ind).toBe(9ull);
 				});
 			});
 		});
@@ -764,19 +765,19 @@ DESCRIBE("tiq::tree::BranchTree", {
 				});
 
 				IT("should contain 15 items", {
-					EXPECT(tree->size()).toBe(15);
+					EXPECT(tree->size()).toBe(15ull);
 				});
 
 				IT("should contain 10 layer 3", {
-					EXPECT(tree->size(3)).toBe(10);
+					EXPECT(tree->size(3)).toBe(10ull);
 				});
 
 				IT("should contain 15 layer 4 items", {
-					EXPECT(tree->size(4)).toBe(15);
+					EXPECT(tree->size(4)).toBe(15ull);
 				});
 
 				IT("should contain 0 items of layer 1", {
-					EXPECT(tree->size(1)).toBe(0);
+					EXPECT(tree->size(1)).toBe(0ull);
 				});
 
 				IT("should get correct nth item", {
@@ -808,19 +809,19 @@ DESCRIBE("tiq::tree::BranchTree", {
 					});
 
 					IT("should contain 15 items", {
-						EXPECT(tree->size()).toBe(15);
+						EXPECT(tree->size()).toBe(15ull);
 					});
 
 					IT("should contain 10 layer 2 items", {
-						EXPECT(tree->size(2)).toBe(10);
+						EXPECT(tree->size(2)).toBe(10ull);
 					});
 
 					IT("should contain 13 layer 3 items", {
-						EXPECT(tree->size(3)).toBe(14);
+						EXPECT(tree->size(3)).toBe(14ull);
 					});
 
 					IT("should contain 15 layer 10 items", {
-						EXPECT(tree->size(10)).toBe(15);
+						EXPECT(tree->size(10)).toBe(15ull);
 					});
 
 					IT("should get correct nth items in layers", {
@@ -892,21 +893,21 @@ DESCRIBE("tiq::tree::BranchTree", {
 						});
 
 						IT("should contain correct amount of items", {
-							EXPECT(tree->size()).toBe(4);
-							EXPECT(tree->size(1)).toBe(0);
-							EXPECT(tree->size(2)).toBe(5);
-							EXPECT(tree->size(3)).toBe(5);
-							EXPECT(tree->size(4)).toBe(4);
-							EXPECT(tree->size(5)).toBe(4);
+							EXPECT(tree->size()).toBe(4ull);
+							EXPECT(tree->size(1)).toBe(0ull);
+							EXPECT(tree->size(2)).toBe(5ull);
+							EXPECT(tree->size(3)).toBe(5ull);
+							EXPECT(tree->size(4)).toBe(4ull);
+							EXPECT(tree->size(5)).toBe(4ull);
 						});
 
 						IT("should give correct size when erased_search is used", {
-							EXPECT(tree->size(true)).toBe(15);
-							EXPECT(tree->size(1, true)).toBe(0);
-							EXPECT(tree->size(2, true)).toBe(10);
-							EXPECT(tree->size(3, true)).toBe(14);
-							EXPECT(tree->size(4, true)).toBe(15);
-							EXPECT(tree->size(5, true)).toBe(15);
+							EXPECT(tree->size(true)).toBe(15ull);
+							EXPECT(tree->size(1, true)).toBe(0ull);
+							EXPECT(tree->size(2, true)).toBe(10ull);
+							EXPECT(tree->size(3, true)).toBe(14ull);
+							EXPECT(tree->size(4, true)).toBe(15ull);
+							EXPECT(tree->size(5, true)).toBe(15ull);
 						});
 
 						IT("should find correct nth item in layers", {
@@ -1079,21 +1080,21 @@ DESCRIBE("tiq::tree::BranchTree", {
 							});
 
 							IT("should contain correct layer sizes", {
-								EXPECT(tree->size()).toBe(18);
-								EXPECT(tree->size(1)).toBe(5);
-								EXPECT(tree->size(2)).toBe(9);
-								EXPECT(tree->size(3)).toBe(12);
-								EXPECT(tree->size(4)).toBe(15);
-								EXPECT(tree->size(5)).toBe(18);
+								EXPECT(tree->size()).toBe(18ull);
+								EXPECT(tree->size(1)).toBe(5ull);
+								EXPECT(tree->size(2)).toBe(9ull);
+								EXPECT(tree->size(3)).toBe(12ull);
+								EXPECT(tree->size(4)).toBe(15ull);
+								EXPECT(tree->size(5)).toBe(18ull);
 							});
 
 							IT("should contain correct layer sizes when erased search is used", {
-								EXPECT(tree->size(true)).toBe(24);
-								EXPECT(tree->size(1, true)).toBe(5);
-								EXPECT(tree->size(2, true)).toBe(14);
-								EXPECT(tree->size(3, true)).toBe(18);
-								EXPECT(tree->size(4, true)).toBe(21);
-								EXPECT(tree->size(5, true)).toBe(24);
+								EXPECT(tree->size(true)).toBe(24ull);
+								EXPECT(tree->size(1, true)).toBe(5ull);
+								EXPECT(tree->size(2, true)).toBe(14ull);
+								EXPECT(tree->size(3, true)).toBe(18ull);
+								EXPECT(tree->size(4, true)).toBe(21ull);
+								EXPECT(tree->size(5, true)).toBe(24ull);
 							});
 
 							IT("should find correct nth item in layers", {

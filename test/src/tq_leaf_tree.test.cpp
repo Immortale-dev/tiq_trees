@@ -1,3 +1,5 @@
+#include "qtest.hpp"
+
 #include <cassert>
 #include <set>
 
@@ -139,7 +141,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 		});
 
 		IT("Should initialize", {
-			EXPECT(tree->size()).toBe(0);
+			EXPECT(tree->size()).toBe(0ull);
 		});
 
 		IT("should return end node", {
@@ -165,7 +167,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 			});
 
 			IT("should correctly insert values", {
-				EXPECT(tree->size()).toBe(30);
+				EXPECT(tree->size()).toBe(30ull);
 				EXPECT(validate_tree(tree)).toBe(0);
 				EXPECT(created_node_count).toBe(119);
 				// print_tree(tree);
@@ -179,7 +181,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 					EXPECT(n->data()).toBe(ind++);
 					n = tree->find_next_leaf(n);
 				}
-				EXPECT(ind == 31);
+				EXPECT(ind == 31).toBe(true);
 			});
 
 			IT("should iterate over leafs backwards", {
@@ -216,7 +218,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 				});
 
 				IT("should correctly erase items", {
-					EXPECT(tree->size()).toBe(20);
+					EXPECT(tree->size()).toBe(20ull);
 					EXPECT(validate_tree(tree)).toBe(0);
 					// print_tree(tree);
 				});
@@ -230,7 +232,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 				});
 
 				IT("should cirrectly erase items", {
-					EXPECT(tree->size()).toBe(20);
+					EXPECT(tree->size()).toBe(20ull);
 					EXPECT(validate_tree(tree)).toBe(0);
 					// print_tree(tree);
 				});
@@ -253,7 +255,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 				});
 
 				IT("should be valid", {
-					EXPECT(tree->size()).toBe(20);
+					EXPECT(tree->size()).toBe(20ull);
 					EXPECT(validate_tree(tree)).toBe(0);
 				});
 			});
@@ -278,7 +280,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 			});
 
 			IT("should correctly insert values", {
-				EXPECT(tree->size()).toBe(100);
+				EXPECT(tree->size()).toBe(100ull);
 				EXPECT(validate_tree(tree)).toBe(0);
 				// print_tree(tree);
 			});
@@ -291,7 +293,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 					EXPECT(n->data()).toBe(ind++);
 					n = tree->find_next_leaf(n);
 				}
-				EXPECT(ind == 101);
+				EXPECT(ind == 101).toBe(true);
 			});
 
 			DESCRIBE("remove random 50 items from the tree", {
@@ -312,7 +314,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 				});
 
 				IT("should be valid", {
-					EXPECT(tree->size()).toBe(50);
+					EXPECT(tree->size()).toBe(50ull);
 					EXPECT(validate_tree(tree)).toBe(0);
 				});
 
@@ -328,7 +330,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 					auto it = tree->begin();
 					int ind=0;
 					while (!it->is_end()) {
-						EXPECT(vals.count(it->data())).toBe(1);
+						EXPECT(vals.count(it->data())).toBe(1ull);
 						it = tree->find_next_leaf(it);
 						ind++;
 					}
@@ -351,7 +353,7 @@ DESCRIBE("tiq::tree::LeafTree", {
 					while(tree->size()) {
 						tree->erase(tree->begin());
 					}
-					EXPECT(tree->size()).toBe(0);
+					EXPECT(tree->size()).toBe(0ull);
 					EXPECT(tree->begin()->is_end()).toBe(true);
 				});
 			});

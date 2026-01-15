@@ -1,3 +1,5 @@
+#include "qtest.hpp"
+
 #include "tq_rope_count_tree.h"
 
 namespace TEST_ROPE_NS {
@@ -55,7 +57,7 @@ DESCRIBE("tiq::tree::detail::Rope", {
 	IT("should construct the rope", {
 		MyTree rope(100);
 
-		EXPECT(rope.size()).toBe(0);
+		EXPECT(rope.size()).toBe(0ull);
 	});
 
 	DESCRIBE("Empty rope with chunk size 10 is created", {
@@ -71,7 +73,7 @@ DESCRIBE("tiq::tree::detail::Rope", {
 			std::vector<int> s{1,2,3,4,5};
 			rope->insert(rope->end(), s);
 
-			EXPECT(rope->size()).toBe(5);
+			EXPECT(rope->size()).toBe(5ull);
 			EXPECT(get_rope_content(*rope)).toBeIterableEqual(s);
 			EXPECT(validate(*rope, 10)).toBe(true);
 		});

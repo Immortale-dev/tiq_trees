@@ -1,3 +1,5 @@
+#include "qtest.hpp"
+
 #include <vector>
 #include <utility>
 #include <algorithm>
@@ -78,7 +80,7 @@ DESCRIBE("tiq::tree::Tree", {
 		});
 
 		IT("Should initialize", {
-			EXPECT(tree->size()).toBe(0);
+			EXPECT(tree->size()).toBe(0ull);
 		});
 
 		IT("should return end node", {
@@ -115,7 +117,7 @@ DESCRIBE("tiq::tree::Tree", {
 			});
 
 			IT("Items should be inserted", {
-				EXPECT(tree->size()).toBe(10);
+				EXPECT(tree->size()).toBe(10ull);
 				for(int i=1;i<=10;i++){
 					auto node = tree->find(bs_find(i));
 					EXPECT(node->is_end()).toBe(false);
@@ -138,7 +140,7 @@ DESCRIBE("tiq::tree::Tree", {
 				std::vector<int> vals(11);
 				std::transform(orders.begin(), orders.end(), vals.begin(), [](auto v){ return v.first; });
 
-				EXPECT(tree->size()).toBe(11);
+				EXPECT(tree->size()).toBe(11ull);
 				EXPECT(vals).toBeIterableEqual(std::vector<int>{1,2,3,4,5,6,7,8,8,9,10});
 			});
 
@@ -335,7 +337,7 @@ DESCRIBE("tiq::tree::Tree", {
 					std::vector<int> vals(7);
 					std::transform(orders.begin(), orders.end(), vals.begin(), [](auto val){ return val.first; });
 
-					EXPECT(tree->size()).toBe(7);
+					EXPECT(tree->size()).toBe(7ull);
 					EXPECT(vals).toBeIterableEqual(std::vector<int>{4,5,6,7,8,9,10});
 				});
 
@@ -374,7 +376,7 @@ DESCRIBE("tiq::tree::Tree", {
 			});
 
 			IT("should insert all items", {
-				EXPECT(tree->size()).toBe(10);
+				EXPECT(tree->size()).toBe(10ull);
 				for(int i=1;i<=10;i++){
 					auto node = tree->find(bs_find(i));
 
@@ -392,7 +394,7 @@ DESCRIBE("tiq::tree::Tree", {
 			IT("should correctly clear the tree", {
 				tree->clear();
 
-				EXPECT(tree->size()).toBe(0);
+				EXPECT(tree->size()).toBe(0ull);
 				EXPECT(tree->root()).toBe(tree->begin());
 				EXPECT(tree->root()).toBe(tree->end());
 				EXPECT(tree->root()->is_end()).toBe(true);
@@ -407,7 +409,7 @@ DESCRIBE("tiq::tree::Tree", {
 			});
 
 			IT("should successfully add items", {
-				EXPECT(tree->size()).toBe(30);
+				EXPECT(tree->size()).toBe(30ull);
 				for(int i=1;i<=30;i++){
 					EXPECT(tree->find(bs_find(i))->is_end()).toBe(false);
 				}
@@ -423,7 +425,7 @@ DESCRIBE("tiq::tree::Tree", {
 				IT("Items should be expected", {
 					auto orders = get_value_orders(tree);
 
-					EXPECT(tree->size()).toBe(10);
+					EXPECT(tree->size()).toBe(10ull);
 					EXPECT(orders).toBeIterableEqual(std::vector<std::pair<int,int>> { {1,2}, {2,25}, {3,4}, {4,2}, {25,0}, {26,28}, {27,26}, {28,25}, {29,28}, {30,29} });
 				});
 			});

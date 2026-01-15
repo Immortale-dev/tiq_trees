@@ -1,3 +1,5 @@
+#include "qtest.hpp"
+
 #include <vector>
 #include <functional>
 
@@ -58,7 +60,7 @@ DESCRIBE("tiq::tree::CountTree", {
 		});
 
 		IT("should show 0 as root size", {
-			EXPECT(ct->root()->count()).toBe(0);
+			EXPECT(ct->root()->count()).toBe(0ull);
 		});
 
 		DESCRIBE("Add 10 items with keys from 1 to 10 to the end of the tree", {
@@ -71,10 +73,10 @@ DESCRIBE("tiq::tree::CountTree", {
 			IT("should calculate counts correctly", {
 				auto nodes = get_nodes(ct);
 
-				std::vector<int> counts(10);
+				std::vector<size_t> counts(10);
 				std::transform(nodes.begin(), nodes.end(), counts.begin(), [](auto n){ return n->count(); });
 
-				EXPECT(counts).toBeIterableEqual(std::vector<int>{1, 3, 1, 10, 1, 6, 1, 4, 2, 1});
+				EXPECT(counts).toBeIterableEqual(std::vector<size_t>{1, 3, 1, 10, 1, 6, 1, 4, 2, 1});
 			});
 
 			IT("should assign 0 to leaves count", {
@@ -82,10 +84,10 @@ DESCRIBE("tiq::tree::CountTree", {
 
 				for (auto n : nodes) {
 					if (ct->left(n)->is_end()) {
-						EXPECT(ct->left(n)->count()).toBe(0);
+						EXPECT(ct->left(n)->count()).toBe(0ull);
 					}
 					if (ct->right(n)->is_end()) {
-						EXPECT(ct->right(n)->count()).toBe(0);
+						EXPECT(ct->right(n)->count()).toBe(0ull);
 					}
 				}
 			});
@@ -144,7 +146,7 @@ DESCRIBE("tiq::tree::CountTree", {
 
 			IT("should calculate counts correctly", {
 				dfs(ct, ct->root(), [](Node* n, int d){
-					EXPECT(n->count()).toBe(d);
+					EXPECT(n->count()).toBe((size_t)d);
 				});
 			});
 
@@ -181,7 +183,7 @@ DESCRIBE("tiq::tree::CountTree", {
 
 				IT("should update counts correctly", {
 					dfs(ct, ct->root(), [](Node* n, int d){
-						EXPECT(n->count()).toBe(d);
+						EXPECT(n->count()).toBe((size_t)d);
 					});
 				});
 

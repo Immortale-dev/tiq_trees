@@ -1,0 +1,4 @@
+STATIC_LIBS+=
+DYNAMIC_LIBS+=
+STATIC_DEV_LIBS+=git@github.com:Immortale-dev/QTest.git
+DYNAMIC_DEV_LIBS+=
