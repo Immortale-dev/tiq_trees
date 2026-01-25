@@ -1,4 +1,4 @@
-# v2.0.3
+# v2.0.4
 .PHONY: test custom lib force clear reset main init update shared
 .DEFAULT_GOAL=test
 
@@ -194,7 +194,7 @@ ifneq (,$(filter main lib shared,$(MAKECMDGOALS)))
 $(call include_prod)
 endif
 
-ifneq (,$(filter test mtest,$(MAKECMDGOALS)))
+ifneq (,$(filter test custom,$(MAKECMDGOALS)))
 $(call include_all)
 endif
 ifeq (,$(strip $(MAKECMDGOALS)))
