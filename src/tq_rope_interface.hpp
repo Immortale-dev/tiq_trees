@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iterator>
+#include <cassert>
 
 template<typename D, typename N>
 tiq::tree::RopeInterface<D,N>::RopeInterface(uint16_t value_size) : value_size_(value_size), value_min_size_(value_size/2), value_max_size_(value_size*2) {}
@@ -13,14 +14,14 @@ void tiq::tree::RopeInterface<D,N>::calc_size(internal_node_ptr_t node) const
 }
 
 template<typename D, typename N>
-typename tiq::tree::RopeInterface<D,N>::value_list_iterator tiq::tree::RopeInterface<D,N>::find_offset_item([[maybe_unused]] content_list_t& container, value_list_iterator b, int16_t offset) const
+uint16_t tiq::tree::RopeInterface<D,N>::find_offset_item(
+	[[maybe_unused]] const value_t* data,
+	uint16_t size,
+	uint16_t current,
+	int16_t offset
+) const
 {
-	if (offset > 0) {
-		if (std::distance(b, container.end()) <= offset) return container.end();
-		return std::next(b, offset);
-	}
-	if (std::distance(container.begin(), b) < -offset) return std::prev(container.begin());
-	return std::prev(b, -offset);
+	return static_cast<uint16_t>(std::clamp<int16_t>(static_cast<int16_t>(current) + offset, static_cast<int16_t>(0), static_cast<int16_t>(size)));
 }
 
 template<typename D, typename N>
@@ -70,14 +71,17 @@ void tiq::tree::RopeInterface<D,N>::relax(node_ptr_t begin, node_ptr_t end)
 		nodes.resize(cnt);
 	}
 
+	assert(content.size() < (1<<15));
+
 	size_t i=0;
-	value_list_iterator b,e = content.begin();
+	uint16_t ib, ie = 0;
+	uint16_t isz = static_cast<uint16_t>(content.size());
 	for (;i<std::min(cnt,nodes.size());i++) {
 		size_t take = value_size_ + (take_rest ? rest : 0);
 		take_rest = false;
-		b = e;
-		e = find_offset_item(content, e, take);
-		nodes[i]->data_ = content_list_t(std::make_move_iterator(b), std::make_move_iterator(e));
+		ib = ie;
+		ie = find_offset_item(content.data(), isz, ie, take);
+		nodes[i]->data_ = content_list_t(std::make_move_iterator(content.begin() + ib), std::make_move_iterator(content.begin() + ie));
 		this_->insert_(nodes[i]);
 	}
 
@@ -85,9 +89,9 @@ void tiq::tree::RopeInterface<D,N>::relax(node_ptr_t begin, node_ptr_t end)
 
 	n = this_->before(end);
 	for (;i<cnt;i++) {
-		b = e;
-		e = find_offset_item(content, e, value_size_);
-		n->data_ = content_list_t(std::make_move_iterator(b), std::make_move_iterator(e));
+		ib = ie;
+		ie = find_offset_item(content.data(), isz, ie, value_size_);
+		n->data_ = content_list_t(std::make_move_iterator(content.begin() + ib), std::make_move_iterator(content.begin() + ie));
 		this_->insert_(n);
 		n = this_->after(n);
 	}

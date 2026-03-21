@@ -21,13 +21,14 @@ namespace tiq::tree {
 			using node_list_t = std::vector<node_ptr_t>;
 			using content_list_t = typename N::value_list_t;
 			using value_list_iterator = typename content_list_t::iterator;
+			using value_t = typename N::value_t;
 
 		protected:
 			RopeInterface(uint16_t value_size);
 
 			virtual void calc_size(internal_node_ptr_t node) const;
-			virtual value_list_iterator find_offset_item(content_list_t& container, value_list_iterator b, int16_t offset) const;
-			virtual void relax(node_ptr_t begin, node_ptr_t end);
+			virtual uint16_t find_offset_item(const value_t* data, uint16_t size, uint16_t current, int16_t offset) const;
+			void relax(node_ptr_t begin, node_ptr_t end);
 
 			uint16_t value_size_;
 			uint16_t value_min_size_;

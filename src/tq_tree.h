@@ -31,6 +31,7 @@ namespace tiq::tree {
 		template<class _N, class _A> friend class Tree;
 		public:
 			using value_type = T;
+			using internal_node_type = InternalNode;
 
 			const T& data() const { return data_.value(); }
 			bool has_data() const { return !!data_; }
@@ -43,7 +44,7 @@ namespace tiq::tree {
 	class Tree {
 		public:
 			using T = typename N::value_type;
-			using internal_node_ptr_t = InternalNode*;
+			using internal_node_ptr_t = typename N::internal_node_type*;
 			using node_ptr_t = N*;
 			using comparator_fn_t = std::function<int(const node_ptr_t node)>;
 
@@ -52,9 +53,9 @@ namespace tiq::tree {
 			Tree(const Tree&) = delete;
 			Tree& operator=(const Tree&) = delete;
 
-			inline node_ptr_t root() const;
-			inline node_ptr_t begin() const;
-			inline node_ptr_t end() const;
+			node_ptr_t root() const;
+			node_ptr_t begin() const;
+			node_ptr_t end() const;
 
 			node_ptr_t find(comparator_fn_t comp) const;
 			node_ptr_t find(node_ptr_t node, comparator_fn_t comp) const;
@@ -62,12 +63,13 @@ namespace tiq::tree {
 			node_ptr_t find_max(node_ptr_t node = nullptr) const;
 			node_ptr_t find_next(node_ptr_t node) const;
 			node_ptr_t find_prev(node_ptr_t node) const;
-			inline node_ptr_t parent(node_ptr_t node) const;
-			inline node_ptr_t left(node_ptr_t node) const;
-			inline node_ptr_t right(node_ptr_t node) const;
-			inline node_ptr_t before(node_ptr_t node = nullptr) const;
-			inline node_ptr_t after(node_ptr_t node = nullptr) const;
-			node_ptr_t insert(node_ptr_t node, T data);
+			node_ptr_t parent(node_ptr_t node) const;
+			node_ptr_t left(node_ptr_t node) const;
+			node_ptr_t right(node_ptr_t node) const;
+			node_ptr_t before(node_ptr_t node = nullptr) const;
+			node_ptr_t after(node_ptr_t node = nullptr) const;
+			node_ptr_t insert(node_ptr_t node, T&& data);
+			node_ptr_t insert(node_ptr_t node, const T& data);
 			node_ptr_t erase(node_ptr_t node);
 			void clear();
 			inline size_t size() const;
@@ -84,13 +86,13 @@ namespace tiq::tree {
 			virtual void right_rotate(internal_node_ptr_t x);
 			virtual void transplant(internal_node_ptr_t u, internal_node_ptr_t v);
 
-			inline internal_node_ptr_t left_(internal_node_ptr_t) const;
-			inline internal_node_ptr_t right_(internal_node_ptr_t) const;
-			inline internal_node_ptr_t parent_(internal_node_ptr_t) const;
+			internal_node_ptr_t left_(internal_node_ptr_t) const;
+			internal_node_ptr_t right_(internal_node_ptr_t) const;
+			internal_node_ptr_t parent_(internal_node_ptr_t) const;
 
-			inline node_ptr_t to_public_node(internal_node_ptr_t node) const;
-			inline internal_node_ptr_t to_internal_node(node_ptr_t node) const;
-			inline internal_node_ptr_t create_empty_node() const;
+			node_ptr_t to_public_node(internal_node_ptr_t node) const;
+			internal_node_ptr_t to_internal_node(node_ptr_t node) const;
+			internal_node_ptr_t create_empty_node() const;
 			virtual void delete_node(internal_node_ptr_t node);
 			virtual void groom_node(internal_node_ptr_t node);
 

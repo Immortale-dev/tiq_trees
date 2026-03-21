@@ -199,7 +199,15 @@ typename tiq::tree::Tree<N,A>::node_ptr_t tiq::tree::Tree<N,A>::after(node_ptr_t
 }
 
 template<class N, class A>
-typename tiq::tree::Tree<N,A>::node_ptr_t tiq::tree::Tree<N,A>::insert(node_ptr_t cnode, T data)
+typename tiq::tree::Tree<N,A>::node_ptr_t tiq::tree::Tree<N,A>::insert(node_ptr_t cnode, T&& data)
+{
+	cnode->data_ = std::move(data);
+	internal_node_ptr_t node = to_internal_node(cnode);
+	return to_public_node(insert_(node));
+}
+
+template<class N, class A>
+typename tiq::tree::Tree<N,A>::node_ptr_t tiq::tree::Tree<N,A>::insert(node_ptr_t cnode, const T& data)
 {
 	cnode->data_ = data;
 	internal_node_ptr_t node = to_internal_node(cnode);
